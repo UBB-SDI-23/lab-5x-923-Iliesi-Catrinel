@@ -56,7 +56,7 @@ export const ArtistUpdate = () => {
                 alert("Failed to update artist!");
                 console.log(reason.message);
               });
-            navigate(`/artists/${artistId}`);
+            navigate("/artists");
         } catch (error) {
             alert("Failed to update artist!");
             console.log(error);
