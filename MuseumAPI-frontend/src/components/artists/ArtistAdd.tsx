@@ -1,11 +1,10 @@
 import { Button, Card, CardActions, CardContent, IconButton, TextField } from "@mui/material";
 import { Container } from "@mui/system";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import axios, { AxiosError, AxiosResponse } from "axios";
-import { Artist } from "../../models/Artist";
-import { BACKEND_URL, BASE_URL } from "../../constants";
+import { BACKEND_API_URL } from "../../constants";
 
 export const ArtistAdd = () => {
 	const navigate = useNavigate();
@@ -22,7 +21,7 @@ export const ArtistAdd = () => {
 	const addArtist = async (event: { preventDefault: () => void }) => {
 		event.preventDefault();
 		try {
-			await axios.post(`${BACKEND_URL}/artists/`, artist).then(() => {
+			await axios.post(`${BACKEND_API_URL}/artists/`, artist).then(() => {
                 alert("Artist added successfully!");
               })
               .catch((reason: AxiosError) => {

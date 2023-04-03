@@ -12,11 +12,8 @@ import {
 	Tooltip,
 } from "@mui/material";
 
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { BACKEND_URL } from "../../constants";
+import { BACKEND_API_URL } from "../../constants";
 import { ArtistStatistic } from "../../models/ArtistStatistic";
 
 export const ArtistAveragePaintingAge = () => {
@@ -24,7 +21,7 @@ export const ArtistAveragePaintingAge = () => {
     const [artists, setArtists] = useState([]);
 
     useEffect(() => {
-        fetch(`${BACKEND_URL}/artists/getbypaintingage/`)
+        fetch(`${BACKEND_API_URL}/artists/getbypaintingage/`)
             .then(response => response.json())
             .then(data => {
                 setArtists(data);

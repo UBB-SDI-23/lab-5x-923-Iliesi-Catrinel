@@ -2,7 +2,7 @@ import { Container, Card, CardContent, IconButton, CardActions, Button } from "@
 import { Link, useNavigate, useParams } from "react-router-dom";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import axios, { AxiosError } from "axios";
-import { BACKEND_URL } from "../../constants";
+import { BACKEND_API_URL } from "../../constants";
 
 export const ArtistDelete = () => {
 	const { artistId } = useParams();
@@ -10,7 +10,7 @@ export const ArtistDelete = () => {
 
 	const handleDelete = async (event: { preventDefault: () => void }) => {
 		event.preventDefault();
-		await axios.delete(`${BACKEND_URL}/artists/${artistId}`).then(() => {
+		await axios.delete(`${BACKEND_API_URL}/artists/${artistId}`).then(() => {
             alert("Artist deleted successfully!");
           })
           .catch((reason: AxiosError) => {

@@ -6,7 +6,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import AddIcon from "@mui/icons-material/Add";
 import { Artist } from "../../models/Artist";
-import { BACKEND_URL, BASE_URL } from "../../constants";
+import { BACKEND_API_URL } from "../../constants";
 
 export const AllArtists = () => {
     const [loading, setLoading] = useState(false);
@@ -14,7 +14,7 @@ export const AllArtists = () => {
 
     useEffect(() => {
         setLoading(true);
-        fetch(`${BACKEND_URL}/artists`)
+        fetch(`${BACKEND_API_URL}/artists`)
         .then(response => response.json())
         .then(data => { 
             setArtists(data); 

@@ -3,9 +3,8 @@ import { Container } from "@mui/system";
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import { alignProperty } from "@mui/material/styles/cssUtils";
 import { Artist } from "../../models/Artist";
-import { BACKEND_URL, BASE_URL } from "../../constants";
+import { BACKEND_API_URL } from "../../constants";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 
@@ -15,7 +14,7 @@ export const ArtistDetails = () => {
 
 	useEffect(() => {
 		const fetchArtist = async () => {
-			const response = await fetch(`${BACKEND_URL}/artists/${artistId}/`);
+			const response = await fetch(`${BACKEND_API_URL}/artists/${artistId}/`);
 			const artist = await response.json();
 			setArtist(artist);
 		};

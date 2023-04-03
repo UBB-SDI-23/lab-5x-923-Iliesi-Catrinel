@@ -3,8 +3,8 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import axios, { AxiosError } from "axios";
-import { BACKEND_URL } from "../../constants";
 import { Artist } from "../../models/Artist";
+import { BACKEND_API_URL } from "../../constants";
 
 export const ArtistUpdate = () => {
     const { artistId } = useParams<{ artistId: string }>();
@@ -26,7 +26,7 @@ export const ArtistUpdate = () => {
 
     useEffect(() => {
         const fetchArtist = async () => {
-            const response = await fetch(`${BACKEND_URL}/artists/${artistId}/`);
+            const response = await fetch(`${BACKEND_API_URL}/artists/${artistId}/`);
             const artist = await response.json();
             setArtist({
                 id: artist.id,
@@ -49,7 +49,7 @@ export const ArtistUpdate = () => {
     const handleUpdate =async (event: { preventDefault: () => void }) => {
         event.preventDefault();
         try {
-            await axios.put(`${BACKEND_URL}/artists/${artistId}/`, artist).then(() => {
+            await axios.put(`${BACKEND_API_URL}/artists/${artistId}/`, artist).then(() => {
                 alert("Artist updated successfully!");
               })
               .catch((reason: AxiosError) => {
