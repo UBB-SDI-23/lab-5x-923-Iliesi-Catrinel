@@ -1,0 +1,166 @@
+﻿using MuseumAPI.Models;
+
+namespace MuseumAPI.Validation
+{
+    public class Validate
+    {
+        public Validate() {}
+        private bool IsDateValid(DateTime? date)
+        {
+            if (date == null)
+            {
+                return false;
+            }
+
+            return date.Value.Year >= 1000 && date.Value.Year <= 3000;
+        }
+
+        private bool IsStringNonEmpty(string? value)
+        {
+            if (value == null)
+            {
+                return false;
+            }
+
+            return value.Length != 0;
+        }
+
+        private bool IsNumberPositive(double? height)
+        {
+            if (height == null)
+            {
+                return false;
+            }
+
+            return height >= 0;
+        }
+
+        private bool IsYearValid(int? year)
+        {
+            if (year == null)
+            {
+                return false;
+            }
+
+            return year >= 1000 && year <= 3000;
+        }
+
+        public String validatePainting(PaintingDTO paintingDTO)
+        {
+            String errors = "";
+
+            if (!IsStringNonEmpty(paintingDTO.Title))
+            {
+                errors += "Title of Painting must be non-empty.\n";
+            }
+
+            if (!IsYearValid(paintingDTO.CreationYear))
+            {
+                errors += "Creation year of Painting must be between 1000 and 3000.\n";
+            }
+
+            if (!IsNumberPositive(paintingDTO.Height))
+            {
+                errors += "Height of Painting must be positive.\n";
+            }
+
+            if (!IsStringNonEmpty(paintingDTO.Subject))
+            {
+                errors += "Subject of Painting must be non-empty.\n";
+            }
+
+            if (!IsStringNonEmpty(paintingDTO.Medium))
+            {
+                errors += "Medium of Painting must be non-empty.\n";
+            }
+
+            return errors;
+        }
+
+        public String validateArtist(ArtistDTO artistDTO)
+        {
+            String errors = "";
+
+            if (!IsStringNonEmpty(artistDTO.FirstName))
+            {
+                errors += "First name of Artist must be non-empty.\n";
+            }
+
+            if (!IsStringNonEmpty(artistDTO.LastName))
+            {
+                errors += "Last name of Artist must be non-empty.\n";
+            }
+
+            if (!IsDateValid(artistDTO.BirthDate))
+            {
+                errors += "Birth date of Artist must be between 1000 and 3000.\n";
+            }
+
+            if (!IsStringNonEmpty(artistDTO.BirthPlace))
+            {
+                errors += "Birth place of Artist must be non-empty.\n";
+            }
+
+            if (!IsStringNonEmpty(artistDTO.Education))
+            {
+                errors += "Education of Artist must be non-empty.\n";
+            }
+
+            if (!IsStringNonEmpty(artistDTO.Movement))
+            {
+                errors += "Movement of Artist must be non-empty.\n";
+            }
+
+            return errors;
+        }
+
+        public String validateMuseum(MuseumDTO museumDTO)
+        {
+            String errors = "";
+
+            if (!IsStringNonEmpty(museumDTO.Name))
+            {
+                errors += "Title of Museum must be non-empty.\n";
+            }
+
+            if (!IsStringNonEmpty(museumDTO.Address))
+            {
+                errors += "Address of Museum must be non-empty.\n";
+            }
+
+            if (!IsDateValid(museumDTO.FoundationDate))
+            {
+                errors += "Foundation Date of Museum must be between 1000 and 3000.\n";
+            }
+
+            if (!IsStringNonEmpty(museumDTO.Architect))
+            {
+                errors += "Architect of Museum must be non-empty.\n";
+            }
+
+            if (!IsStringNonEmpty(museumDTO.Website))
+            {
+                errors += "Website of Museum must be non-empty.\n";
+            }
+
+            return errors;
+        }
+
+        public String validateExhibition(ExhibitionDTO exhibitionDTO)
+        {
+            String errors = "";
+
+            if (!IsDateValid(exhibitionDTO.StartDate))
+            {
+                errors += "Start date of Exhibition must be between 1000 and 3000.\n";
+            }
+
+            if (!IsDateValid(exhibitionDTO.EndDate))
+            {
+                errors += "End date of Exhibition must be between 1000 and 3000.\n";
+            }
+
+            return errors;
+        }
+    }
+}
