@@ -13,4 +13,6 @@ export interface Artist {
     paintings: Painting[];
     museums: Museum[];
     exhibitions: Exhibition[];
+
+    [key: string]: any;
 }

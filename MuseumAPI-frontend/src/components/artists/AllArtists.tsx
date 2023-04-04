@@ -11,6 +11,31 @@ import { BACKEND_API_URL } from "../../constants";
 export const AllArtists = () => {
     const [loading, setLoading] = useState(false);
     const [artists, setArtists] = useState<Artist[]>([]);
+	const [sorting, setSorting] = useState({ key: 'firstName', ascending: false })
+
+	function applySorting(key: string, ascending: boolean) {
+		setSorting({ key: key, ascending: ascending });
+	  }
+
+	  useEffect(() => {
+		if (artists.length === 0) {
+		  return;
+		}
+
+		// Copy array to prevent data mutation
+		const currentArtists = [...artists];
+	
+		// Apply sorting
+		const sortedCurrentArtists = currentArtists.sort((a, b) => {
+		  return a[sorting.key].localeCompare(b[sorting.key]);
+		});
+	
+		// Replace currentUsers with sorted currentUsers
+		setArtists(
+		  // Decide either currentUsers sorted by ascending or descending order
+		  sorting.ascending ? sortedCurrentArtists : sortedCurrentArtists.reverse()
+		);
+	  }, [sorting]);
 
     useEffect(() => {
         setLoading(true);
@@ -42,7 +67,7 @@ export const AllArtists = () => {
 						<TableHead>
 							<TableRow>
 								<TableCell>#</TableCell>
-								<TableCell align="right">First Name</TableCell>
+								<TableCell align="right" style= {{cursor: "pointer"}} onClick={() => applySorting('firstName', !sorting.ascending)}>First Name</TableCell>
                                 <TableCell align="right">Last Name</TableCell>
 								<TableCell align="right">Birth Date</TableCell>
 								<TableCell align="right">Birth Place</TableCell>
