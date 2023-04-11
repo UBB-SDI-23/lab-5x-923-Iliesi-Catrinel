@@ -79,6 +79,7 @@ export const ArtistUpdate = () => {
 						<TextField
 							id="firstName"
 							label="First name"
+                            value={artist.firstName}
 							variant="outlined"
 							fullWidth
 							sx={{ mb: 2 }}
@@ -87,6 +88,7 @@ export const ArtistUpdate = () => {
 						<TextField
 							id="lastName"
 							label="Last name"
+                            value={artist.lastName}
 							variant="outlined"
 							fullWidth
 							sx={{ mb: 2 }}
@@ -96,6 +98,7 @@ export const ArtistUpdate = () => {
                         <TextField
 							id="birthDate"
 							label="Birth Date"
+                            value={artist.birthDate}
 							variant="outlined"
 							fullWidth
 							sx={{ mb: 2 }}
@@ -105,6 +108,7 @@ export const ArtistUpdate = () => {
                         <TextField
 							id="birthPlace"
 							label="Birth Place"
+                            value={artist.birthPlace}
 							variant="outlined"
 							fullWidth
 							sx={{ mb: 2 }}
@@ -114,6 +118,7 @@ export const ArtistUpdate = () => {
                         <TextField
 							id="education"
 							label="Education"
+                            value={artist.education}
 							variant="outlined"
 							fullWidth
 							sx={{ mb: 2 }}
@@ -123,6 +128,7 @@ export const ArtistUpdate = () => {
                         <TextField
 							id="movement"
 							label="Movement"
+                            value={artist.movement}
 							variant="outlined"
 							fullWidth
 							sx={{ mb: 2 }}

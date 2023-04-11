@@ -37,6 +37,32 @@ namespace MuseumAPI.Controllers
             return await _context.Artists.Select(x => ArtistToDTO(x)).ToListAsync();
         }
 
+        // GET: api/Artists?page=0&pageSize=10
+        [HttpGet("{page}/{pageSize}")]
+        public async Task<ActionResult<IEnumerable<ArtistDTO>>> GetArtistsPagination(int page = 0, int pageSize = 10)
+        {
+            if (_context.Artists == null)
+                return NotFound();
+
+            return await _context.Artists
+                .Skip(page * pageSize)
+                .Take(pageSize)
+                .Select(x => ArtistToDTO(x))
+                .ToListAsync();
+        }
+
+        [HttpGet("autocomplete")]
+        public async Task<ActionResult<IEnumerable<ArtistDTO>>> AutocompleteName(string query, int pageNumber = 1, int pageSize = 100)
+        {
+            var names = await _context.Artists.Where(t => t.FirstName!.Contains(query))
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .Select(x => ArtistToDTO(x))
+                .ToListAsync();
+
+            return Ok(names);
+        }
+
         // GET: api/Artists/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Artist>> GetArtist(long id)

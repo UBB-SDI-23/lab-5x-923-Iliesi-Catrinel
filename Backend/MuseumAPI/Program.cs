@@ -18,9 +18,13 @@ namespace PaintingsAPI
 
             builder.Services.AddControllers().AddNewtonsoftJson(options => options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
 
+            var connectionString = builder.Configuration.GetConnectionString("LocalMuseumCS");
+            if (string.IsNullOrEmpty(connectionString))
+                connectionString = builder.Configuration.GetConnectionString("MuseumCS");
+
             // add the database context to the DI container
             // and specify that the database context will use a sql server database
-            builder.Services.AddDbContext<MuseumContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("MuseumCS")));
+            builder.Services.AddDbContext<MuseumContext>(options => options.UseSqlServer(connectionString));
 
             // add endpoints
             builder.Services.AddEndpointsApiExplorer();
