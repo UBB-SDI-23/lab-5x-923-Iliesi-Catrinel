@@ -94,6 +94,7 @@ namespace MuseumAPI.Controllers
             painting.Height = paintingDTO.Height;
             painting.Subject = paintingDTO.Subject;
             painting.Medium = paintingDTO.Medium;
+            painting.Description = paintingDTO.Description;
 
             painting.ArtistId = paintingDTO.ArtistId;
             painting.Artist = artist;
@@ -147,6 +148,7 @@ namespace MuseumAPI.Controllers
                 CreationYear = paintingDTO.CreationYear,
                 Subject = paintingDTO.Subject,
                 Medium = paintingDTO.Medium,
+                Description = paintingDTO.Description,
 
                 ArtistId = paintingDTO.ArtistId,
                 Artist = artist,
@@ -207,6 +209,7 @@ namespace MuseumAPI.Controllers
                 Height = painting.Height,
                 Subject = painting.Subject,
                 Medium = painting.Medium,
+                Description = painting.Description,
 
                 ArtistId = painting.ArtistId,
             };

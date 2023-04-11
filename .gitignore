@@ -6,3 +6,4 @@ SQLHelper/generate.py
 SQLHelper/main.sql
 SQLHelper/museums.csv
 SQLHelper/paintings.csv
+SQLHelper/paintings_new.csv

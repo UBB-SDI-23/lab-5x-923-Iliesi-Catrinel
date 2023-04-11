@@ -8,6 +8,7 @@
         public double Height { get; set; }
         public string? Subject { get; set; }
         public string? Medium { get; set; }
+        public string? Description { get; set; }
 
         public long ArtistId { get; set; }
 

@@ -25,7 +25,7 @@ export const ArtistAdd = () => {
 	const fetchSuggestions = async (query: string) => {
 		try {
 			const response = await axios.get<Artist[]>(
-				`${BACKEND_API_URL}/artists/autocomplete?query=${query}&pageNumber=1&pageSize=100`
+				`${BACKEND_API_URL}/artists/autocomplete?query=${query}`
 			);
 			const data = await response.data;
 			setArtistNames(data);

@@ -52,15 +52,19 @@ namespace MuseumAPI.Controllers
         }
 
         [HttpGet("autocomplete")]
-        public async Task<ActionResult<IEnumerable<ArtistDTO>>> AutocompleteName(string query, int pageNumber = 1, int pageSize = 100)
+        public async Task<ActionResult<IEnumerable<ArtistDTO>>> AutocompleteName(string query)
         {
-            var names = await _context.Artists.Where(t => t.FirstName!.Contains(query))
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .Select(x => ArtistToDTO(x))
-                .ToListAsync();
 
-            return Ok(names);
+            if (_context.Artists == null)
+                return NotFound();
+
+            if (query.Length < 3)
+                return NotFound();
+
+            return await _context.Artists.Where(t => t.FirstName != null && t.FirstName.ToLower().Contains(query.ToLower()))
+                .Select(x => ArtistToDTO(x))
+                .Take(10)
+                .ToListAsync();
         }
 
         // GET: api/Artists/5
@@ -325,6 +329,7 @@ namespace MuseumAPI.Controllers
                     Height = paintingDTO.Height,
                     Subject = paintingDTO.Subject,
                     Medium = paintingDTO.Medium,
+                    Description = paintingDTO.Description,
                     ArtistId = id,
                 };
 
@@ -391,7 +396,7 @@ namespace MuseumAPI.Controllers
                                Movement = g.Key.Movement,
                                AveragePaintingAge = g.Average(painting => DateTime.Now.Year - painting.CreationYear)
                            }
-                     ).OrderBy(dto => dto.AveragePaintingAge).ToListAsync();
+                     ).Take(100).OrderBy(dto => dto.AveragePaintingAge).ToListAsync();
 
             return a;
         }
