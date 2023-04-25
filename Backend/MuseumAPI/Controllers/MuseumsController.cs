@@ -37,6 +37,20 @@ namespace MuseumAPI.Controllers
             return await _context.Museums.Select(x => MuseumToDTO(x)).ToListAsync();
         }
 
+        // GET: api/Museums?page=0&pageSize=10
+        [HttpGet("{page}/{pageSize}")]
+        public async Task<ActionResult<IEnumerable<MuseumDTO>>> GetMuseumsPagination(int page = 0, int pageSize = 10)
+        {
+            if (_context.Museums == null)
+                return NotFound();
+
+            return await _context.Museums
+                .Skip(page * pageSize)
+                .Take(pageSize)
+                .Select(x => MuseumToDTO(x))
+                .ToListAsync();
+        }
+
         // GET: api/Museums/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Museum>> GetMuseum(long id)
@@ -59,6 +73,22 @@ namespace MuseumAPI.Controllers
             return museum;
         }
 
+        [HttpGet("autocomplete")]
+        public async Task<ActionResult<IEnumerable<MuseumDTO>>> AutocompleteName(string query)
+        {
+
+            if (_context.Museums == null)
+                return NotFound();
+
+            if (query.Length < 3)
+                return NotFound();
+
+            return await _context.Museums.Where(t => t.Name != null && t.Name.ToLower().Contains(query.ToLower()))
+                .Select(x => MuseumToDTO(x))
+                .Take(10)
+                .ToListAsync();
+        }
+
         // PUT: api/Museums/5
         [HttpPut("{id}")]
         public async Task<IActionResult> PutMuseum(long id, MuseumDTO museumDTO)
@@ -75,7 +105,7 @@ namespace MuseumAPI.Controllers
                 return NotFound();
             }
 
-            String validationErrors = _validator.validateMuseum(museumDTO);
+            String validationErrors = _validator.ValidateMuseum(museumDTO);
 
             if (validationErrors != String.Empty)
             {
@@ -121,7 +151,7 @@ namespace MuseumAPI.Controllers
                 return Problem("The request body is null.");
             }
 
-            String validationErrors = _validator.validateMuseum(museumDTO);
+            String validationErrors = _validator.ValidateMuseum(museumDTO);
 
             if (validationErrors != String.Empty)
             {

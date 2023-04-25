@@ -5,6 +5,8 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import axios, { AxiosError } from "axios";
 import { Artist } from "../../models/Artist";
 import { BACKEND_API_URL } from "../../constants";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export const ArtistUpdate = () => {
     const { artistId } = useParams<{ artistId: string }>();
@@ -46,19 +48,31 @@ export const ArtistUpdate = () => {
         fetchArtist();
     }, [artistId]);
 
+    const displayError = (message: string) => {
+		toast.error(message, {
+		  position: toast.POSITION.TOP_CENTER,
+		});
+	  };	  
+
+	const displaySuccess = (message: string) => {
+		toast.success(message, {
+		  position: toast.POSITION.TOP_CENTER,
+		});
+	};
+
     const handleUpdate =async (event: { preventDefault: () => void }) => {
         event.preventDefault();
         try {
             await axios.put(`${BACKEND_API_URL}/artists/${artistId}/`, artist).then(() => {
-                alert("Artist updated successfully!");
+                displaySuccess("Artist updated successfully!");
               })
               .catch((reason: AxiosError) => {
-                alert("Failed to update artist!");
+                displayError("Failed to update artist!");
                 console.log(reason.message);
               });
             navigate("/artists");
         } catch (error) {
-            alert("Failed to update artist!");
+            displayError("Failed to update artist!");
             console.log(error);
         }
     };
@@ -76,7 +90,7 @@ export const ArtistUpdate = () => {
 						<ArrowBackIcon />
 					</IconButton>{" "}
 					<form onSubmit={handleUpdate}>
-						<TextField
+                    <TextField
 							id="firstName"
 							label="First name"
                             value={artist.firstName}
@@ -94,7 +108,6 @@ export const ArtistUpdate = () => {
 							sx={{ mb: 2 }}
 							onChange={(event) => setArtist({ ...artist, lastName: event.target.value })}
 						/>
-
                         <TextField
 							id="birthDate"
 							label="Birth Date"
@@ -104,7 +117,6 @@ export const ArtistUpdate = () => {
 							sx={{ mb: 2 }}
 							onChange={(event) => setArtist({ ...artist, birthDate: new Date(event.target.value) })}
 						/>
-
                         <TextField
 							id="birthPlace"
 							label="Birth Place"
@@ -114,7 +126,6 @@ export const ArtistUpdate = () => {
 							sx={{ mb: 2 }}
 							onChange={(event) => setArtist({ ...artist, birthPlace: event.target.value })}
 						/>
-
                         <TextField
 							id="education"
 							label="Education"
@@ -124,7 +135,6 @@ export const ArtistUpdate = () => {
 							sx={{ mb: 2 }}
 							onChange={(event) => setArtist({ ...artist, education: event.target.value })}
 						/>
-
                         <TextField
 							id="movement"
 							label="Movement"

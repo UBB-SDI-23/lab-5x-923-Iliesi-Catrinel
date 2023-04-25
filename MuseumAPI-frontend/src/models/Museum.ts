@@ -2,12 +2,14 @@ import { Artist } from './Artist';
 import { Exhibition } from './Exhibition';
 
 export interface Museum {
-    id: number;
+    id?: number;
     name: string;
     address: string;
     foundationDate: Date;
     architect: string;
     website: string;
-    artists: Artist[];
-    exhibitions: Exhibition[];
+    artists?: Artist[];
+    exhibitions?: Exhibition[];
+
+    [key: string]: any;
 }

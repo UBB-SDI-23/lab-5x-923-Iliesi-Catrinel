@@ -5,7 +5,7 @@ namespace MuseumAPI.Validation
     public class Validate
     {
         public Validate() {}
-        private bool IsDateValid(DateTime? date)
+        private static bool IsDateValid(DateTime? date)
         {
             if (date == null)
             {
@@ -15,7 +15,7 @@ namespace MuseumAPI.Validation
             return date.Value.Year >= 1000 && date.Value.Year <= 3000;
         }
 
-        private bool IsStringNonEmpty(string? value)
+        private static bool IsStringNonEmpty(string? value)
         {
             if (value == null)
             {
@@ -25,7 +25,7 @@ namespace MuseumAPI.Validation
             return value.Length != 0;
         }
 
-        private bool IsNumberPositive(double? height)
+        private static bool IsNumberPositive(double? height)
         {
             if (height == null)
             {
@@ -35,7 +35,7 @@ namespace MuseumAPI.Validation
             return height >= 0;
         }
 
-        private bool IsYearValid(int? year)
+        private static bool IsYearValid(int? year)
         {
             if (year == null)
             {
@@ -45,7 +45,12 @@ namespace MuseumAPI.Validation
             return year >= 1000 && year <= 3000;
         }
 
-        public String validatePainting(PaintingDTO paintingDTO)
+        private static bool IsStartDateBeforeEndDate(DateTime startDate, DateTime endDate) 
+        {
+            return startDate < endDate;
+        }
+
+        public String ValidatePainting(PaintingDTO paintingDTO)
         {
             String errors = "";
 
@@ -77,7 +82,7 @@ namespace MuseumAPI.Validation
             return errors;
         }
 
-        public String validateArtist(ArtistDTO artistDTO)
+        public String ValidateArtist(ArtistDTO artistDTO)
         {
             String errors = "";
 
@@ -114,7 +119,7 @@ namespace MuseumAPI.Validation
             return errors;
         }
 
-        public String validateMuseum(MuseumDTO museumDTO)
+        public String ValidateMuseum(MuseumDTO museumDTO)
         {
             String errors = "";
 
@@ -146,7 +151,7 @@ namespace MuseumAPI.Validation
             return errors;
         }
 
-        public String validateExhibition(ExhibitionDTO exhibitionDTO)
+        public String ValidateExhibition(ExhibitionDTO exhibitionDTO)
         {
             String errors = "";
 
@@ -158,6 +163,11 @@ namespace MuseumAPI.Validation
             if (!IsDateValid(exhibitionDTO.EndDate))
             {
                 errors += "End date of Exhibition must be between 1000 and 3000.\n";
+            }
+
+            if (!IsStartDateBeforeEndDate(exhibitionDTO.StartDate, exhibitionDTO.EndDate))
+            {
+                errors += "Start date of Exhibition must be before end date.\n";
             }
 
             return errors;

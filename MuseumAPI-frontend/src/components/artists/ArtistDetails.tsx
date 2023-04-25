@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { Artist } from "../../models/Artist";
-import { BACKEND_API_URL } from "../../constants";
+import { BACKEND_API_URL, formatDate } from "../../constants";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 
@@ -31,7 +31,7 @@ export const ArtistDetails = () => {
 					<h3>Artist Details</h3>
 					<p>First Name: {artist?.firstName}</p>
                     <p>First Name: {artist?.lastName}</p>
-					<p>Birth Date: {artist?.birthDate.toLocaleString()}</p>
+					<p>Birth Date: {formatDate(artist?.birthDate)}</p>
                     <p>Birth Place: {artist?.birthPlace}</p>
                     <p>Education: {artist?.education}</p>
                     <p>Movement: {artist?.movement}</p>

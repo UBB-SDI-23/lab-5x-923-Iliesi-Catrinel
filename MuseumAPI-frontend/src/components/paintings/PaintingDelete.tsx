@@ -7,11 +7,11 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 
-export const ArtistDelete = () => {
-	const { artistId } = useParams();
+export const PaintingDelete = () => {
+	const { paintingId } = useParams();
 	const navigate = useNavigate();
 
-	const displayError = (message: string) => {
+    const displayError = (message: string) => {
 		toast.error(message, {
 		  position: toast.POSITION.TOP_CENTER,
 		});
@@ -25,31 +25,31 @@ export const ArtistDelete = () => {
 
 	const handleDelete = async (event: { preventDefault: () => void }) => {
 		event.preventDefault();
-		await axios.delete(`${BACKEND_API_URL}/artists/${artistId}`).then(() => {
-            displaySuccess("Artist deleted successfully!");
+		await axios.delete(`${BACKEND_API_URL}/paintings/${paintingId}`).then(() => {
+            displaySuccess("Painting deleted successfully!");
           })
           .catch((reason: AxiosError) => {
-            displayError("Failed to delete artist!");
+            displayError("Failed to delete painting!");
             console.log(reason.message);
           });;
-		// go to artists list
-		navigate("/artists");
+		// go to paintings list
+		navigate("/paintings");
 	};
 
 	const handleCancel = (event: { preventDefault: () => void }) => {
 		event.preventDefault();
-		// go to artists list
-		navigate("/artists");
+		// go to paintings list
+		navigate("/paintings");
 	};
 
 	return (
 		<Container>
 			<Card>
 				<CardContent>
-					<IconButton component={Link} sx={{ mr: 3 }} to={`/artists`}>
+					<IconButton component={Link} sx={{ mr: 3 }} to={`/paintings`}>
 						<ArrowBackIcon />
 					</IconButton>{" "}
-					Are you sure you want to delete this artist? This cannot be undone!
+					Are you sure you want to delete this painting? This cannot be undone!
 				</CardContent>
 				<CardActions>
 					<Button type="submit" onClick={handleDelete} variant="contained">Delete</Button>

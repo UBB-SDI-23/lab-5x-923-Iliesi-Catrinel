@@ -45,25 +45,10 @@ namespace MuseumAPI.Controllers
                 return NotFound();
 
             return await _context.Artists
+                .Include(a => a.Paintings)
                 .Skip(page * pageSize)
                 .Take(pageSize)
                 .Select(x => ArtistToDTO(x))
-                .ToListAsync();
-        }
-
-        [HttpGet("autocomplete")]
-        public async Task<ActionResult<IEnumerable<ArtistDTO>>> AutocompleteName(string query)
-        {
-
-            if (_context.Artists == null)
-                return NotFound();
-
-            if (query.Length < 3)
-                return NotFound();
-
-            return await _context.Artists.Where(t => t.FirstName != null && t.FirstName.ToLower().Contains(query.ToLower()))
-                .Select(x => ArtistToDTO(x))
-                .Take(10)
                 .ToListAsync();
         }
 
@@ -89,6 +74,22 @@ namespace MuseumAPI.Controllers
             return artist;
         }
 
+        [HttpGet("autocomplete")]
+        public async Task<ActionResult<IEnumerable<ArtistDTO>>> AutocompleteName(string query)
+        {
+
+            if (_context.Artists == null)
+                return NotFound();
+
+            if (query.Length < 3)
+                return NotFound();
+
+            return await _context.Artists.Where(t => t.FirstName != null && t.FirstName.ToLower().Contains(query.ToLower()))
+                .Select(x => ArtistToDTO(x))
+                .Take(10)
+                .ToListAsync();
+        }
+
         // PUT: api/Artists/5
         [HttpPut("{id}")]
         public async Task<IActionResult> PutArtist(long id, ArtistDTO artistDTO)
@@ -105,7 +106,7 @@ namespace MuseumAPI.Controllers
                 return NotFound();
             }
 
-            String validationErrors = _validator.validateArtist(artistDTO);
+            String validationErrors = _validator.ValidateArtist(artistDTO);
 
             if (validationErrors != String.Empty)
             {
@@ -153,7 +154,7 @@ namespace MuseumAPI.Controllers
                 return Problem("The request body is null.");
             }
 
-            String validationErrors = _validator.validateArtist(artistDTO);
+            String validationErrors = _validator.ValidateArtist(artistDTO);
 
             if (validationErrors != String.Empty)
             {
@@ -308,7 +309,7 @@ namespace MuseumAPI.Controllers
             return NoContent();
         }
 
-        // POST: api/Artists/5/Paintings
+        // POST: api/Artists/5/PaintingsList
         [HttpPost("{id}/PaintingsList")]
         public async Task<ActionResult<Artist>> PostPaintingsToArtistFullObject(long id, List<PaintingDTO> paintings)
         {
@@ -428,7 +429,7 @@ namespace MuseumAPI.Controllers
                                Movement = g.Key.Movement,
                                AveragePaintingHeight = g.Average(painting => painting.Height)
                            }
-                     ).OrderBy(dto => dto.AveragePaintingHeight).ToListAsync();
+                     ).Take(100).OrderBy(dto => dto.AveragePaintingHeight).ToListAsync();
 
             return a;
         }
@@ -453,6 +454,33 @@ namespace MuseumAPI.Controllers
             await _context.SaveChangesAsync();
 
             return NoContent();
+        }
+
+        [HttpGet("count-paintings")]
+        public async Task<IEnumerable<int>> GetPaintingCountForArtist(int pageNumber = 0, int pageSize = 10)
+        {
+            var paintingsCount = await _context.Paintings
+                .GroupBy(a => a.ArtistId)
+                .Select(g => new { ArtistId = g.Key, paintingsCount = g.Count() })
+                .OrderBy(a => a.ArtistId)
+                .Skip(pageNumber * pageSize)
+                .Take(pageSize)
+                .Select(a => a.paintingsCount)
+                .ToListAsync();
+
+            return paintingsCount;
+        }
+
+        [HttpGet("total-number-pages")]
+        public async Task<int> GetTotalNumberOfPages(int pageSize = 10)
+        {
+            int totalAuthors = await _context.Artists.CountAsync();
+            int totalPages = totalAuthors / pageSize;
+            if (totalAuthors % pageSize > 0)
+            {
+                totalPages++;
+            }
+            return totalPages;
         }
 
         private bool ArtistExists(long id)

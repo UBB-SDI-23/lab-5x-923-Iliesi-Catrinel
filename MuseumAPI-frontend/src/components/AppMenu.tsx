@@ -1,8 +1,10 @@
 import { AppBar, Box, Button, IconButton, Toolbar, Typography, colors } from "@mui/material";
 import { Link, useLocation } from "react-router-dom";
 import LocalLibraryIcon from "@mui/icons-material/LocalLibrary";
-import AddIcon from '@mui/icons-material/Add';
 import SummarizeIcon from '@mui/icons-material/Summarize';
+import BrushIcon from '@mui/icons-material/Brush';
+import MuseumIcon from '@mui/icons-material/Museum';
+import ColorLensIcon from '@mui/icons-material/ColorLens';
 
 
 export const AppMenu = () => {
@@ -43,6 +45,51 @@ export const AppMenu = () => {
 						startIcon={<SummarizeIcon />}>
 						Artists ordered by average Painting age
 					</Button>
+					<Button
+						variant={path.startsWith("/artists/") ? "outlined" : "text"}
+						to="/artists/getbypaintingheight"
+						component={Link}
+						color="inherit"
+						sx={{ mr: 5 }}
+						startIcon={<SummarizeIcon />}>
+						Artists ordered by average Painting height
+					</Button>
+					<Button
+						variant={path.startsWith("/paintings") ? "outlined" : "text"}
+						to="/paintings"
+						component={Link}
+						color="inherit"
+						sx={{ mr: 5 }}
+						startIcon={<BrushIcon />}>
+						Paintings
+					</Button>
+					<Button
+						variant={path.startsWith("/paintings") ? "outlined" : "text"}
+						to="/paintings/filter-year"
+						component={Link}
+						color="inherit"
+						sx={{ mr: 5 }}
+						startIcon={<BrushIcon />}>
+						Paintings Filter
+					</Button>
+					<Button
+						variant={path.startsWith("/museums") ? "outlined" : "text"}
+						to="/museums"
+						component={Link}
+						color="inherit"
+						sx={{ mr: 5 }}
+						startIcon={<MuseumIcon />}>
+						Museums
+					</Button>
+					{/*<Button
+						variant={path.startsWith("/exhibitions") ? "outlined" : "text"}
+						to="/exhibitions"
+						component={Link}
+						color="inherit"
+						sx={{ mr: 5 }}
+						startIcon={<ColorLensIcon />}>
+						Exhibitions
+	</Button>*/}
 				</Toolbar>
 			</AppBar>
 		</Box>

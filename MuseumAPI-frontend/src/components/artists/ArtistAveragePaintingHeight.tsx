@@ -12,14 +12,14 @@ import {
 
 import { useEffect, useState } from "react";
 import { BACKEND_API_URL } from "../../constants";
-import { ArtistStatistic } from "../../models/ArtistStatisticAge";
+import { ArtistStatistic } from "../../models/ArtistStatisticHeight";
 
-export const ArtistAveragePaintingAge = () => {
+export const ArtistAveragePaintingHeight = () => {
     const [loading, setLoading] = useState(true);
     const [artists, setArtists] = useState([]);
 
     useEffect(() => {
-        fetch(`${BACKEND_API_URL}/artists/getbypaintingage/`)
+        fetch(`${BACKEND_API_URL}/artists/getbypaintingheight/`)
             .then(response => response.json())
             .then(data => {
                 setArtists(data);
@@ -32,7 +32,7 @@ export const ArtistAveragePaintingAge = () => {
 
     return (
         <Container>
-        <h1>All Artists Ordered By The Average Age of their Paintings</h1>
+        <h1>All Artists Ordered By The Average Height of their Paintings</h1>
         {loading && <CircularProgress />}
         {!loading && artists.length == 0 && <div>No artists found!</div>}
         {!loading && artists.length > 0 && (
@@ -47,7 +47,7 @@ export const ArtistAveragePaintingAge = () => {
                             <TableCell align="center">Birth Place</TableCell>
                             <TableCell align="center">Education</TableCell>
                             <TableCell align="center">Movement</TableCell>
-                            <TableCell align="center">Average Years Of their Paintings</TableCell>
+                            <TableCell align="center">Average Height Of their Paintings</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -60,7 +60,7 @@ export const ArtistAveragePaintingAge = () => {
                                 <TableCell align="center">{artist.birthPlace}</TableCell>
                                 <TableCell align="center">{artist.education}</TableCell>
                                 <TableCell align="center">{artist.movement}</TableCell>
-                                <TableCell align="center">{artist.averagePaintingAge}</TableCell>
+                                <TableCell align="center">{artist.averagePaintingHeight}</TableCell>
                             </TableRow>
                         ))}
                 </TableBody>

@@ -7,17 +7,19 @@ import axios, { AxiosError, AxiosResponse } from "axios";
 import { BACKEND_API_URL } from "../../constants";
 import { Artist } from "../../models/Artist";
 import { debounce } from "lodash";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export const ArtistAdd = () => {
 	const navigate = useNavigate();
 
-	const [artist, setArtist] = useState({
-		"firstName": "",
-        "lastName": "",
-        "birthDate": "2023-04-02T19:24:09.239Z",
-        "birthPlace": "",
-        "education": "",
-        "movement": ""
+	const [artist, setArtist] = useState<Artist>({
+		firstName: "",
+        lastName: "",
+        birthDate: new Date(),
+        birthPlace: "",
+        education: "",
+        movement: ""
 	});
 
 	const [artistNames, setArtistNames] = useState<Artist[]>([]);
@@ -50,19 +52,31 @@ export const ArtistAdd = () => {
 		}
 	};
 
+	const displayError = (message: string) => {
+		toast.error(message, {
+		  position: toast.POSITION.TOP_CENTER,
+		});
+	  };	  
+
+	const displaySuccess = (message: string) => {
+		toast.success(message, {
+		  position: toast.POSITION.TOP_CENTER,
+		});
+	};	 
+
 	const addArtist = async (event: { preventDefault: () => void }) => {
 		event.preventDefault();
 		try {
 			await axios.post(`${BACKEND_API_URL}/artists/`, artist).then(() => {
-                alert("Artist added successfully!");
+                displaySuccess("Artist added successfully!");
               })
               .catch((reason: AxiosError) => {
-                alert("Failed to add artist!");
+                displayError("Failed to add artist!");
                 console.log(reason.message);
               });
 			navigate("/artists");
 		} catch (error) {
-			alert("Failed to add artist!");
+			displayError("Failed to add artist!");
 			console.log(error);
 		}
 	};
@@ -75,15 +89,6 @@ export const ArtistAdd = () => {
 						<ArrowBackIcon />
 					</IconButton>{" "}
 					<form onSubmit={addArtist}>
-						{/*<TextField
-							id="firstName"
-							label="First Name"
-							variant="outlined"
-							fullWidth
-							sx={{ mb: 2 }}
-							onChange={(event) => setArtist({ ...artist, firstName: event.target.value })}
-	/>*/}
-
 						<Autocomplete
 							id="firstName"
 							options={artistNames}
@@ -112,7 +117,7 @@ export const ArtistAdd = () => {
 							variant="outlined"
 							fullWidth
 							sx={{ mb: 2 }}
-							onChange={(event) => setArtist({ ...artist, birthDate: event.target.value })}
+							onChange={(event) => setArtist({ ...artist, birthDate: new Date(event.target.value) })}
 						/>
                         <TextField
 							id="birthPlace"

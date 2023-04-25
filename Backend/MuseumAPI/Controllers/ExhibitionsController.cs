@@ -37,6 +37,20 @@ namespace MuseumAPI.Controllers
             return await _context.Exhibitions.Select(x => ExhibitionToDTO(x)).ToListAsync();
         }
 
+        // GET: api/Exhibitions?page=0&pageSize=10
+        [HttpGet("{page}/{pageSize}")]
+        public async Task<ActionResult<IEnumerable<ExhibitionDTO>>> GetExhibitionsPagination(int page = 0, int pageSize = 10)
+        {
+            if (_context.Exhibitions == null)
+                return NotFound();
+
+            return await _context.Exhibitions
+                .Skip(page * pageSize)
+                .Take(pageSize)
+                .Select(x => ExhibitionToDTO(x))
+                .ToListAsync();
+        }
+
         // GET: api/Exhibitions/5/5
         [HttpGet("{mid}/{aid}")]
         public async Task<ActionResult<Exhibition>> GetExhibition(long mid, long aid)
@@ -76,7 +90,7 @@ namespace MuseumAPI.Controllers
                 return NotFound();
             }
 
-            String validationErrors = _validator.validateExhibition(exhibitionDTO);
+            String validationErrors = _validator.ValidateExhibition(exhibitionDTO);
 
             if (validationErrors != String.Empty)
             {
@@ -130,7 +144,7 @@ namespace MuseumAPI.Controllers
                 return BadRequest();
             }
 
-            String validationErrors = _validator.validateExhibition(exhibitionDTO);
+            String validationErrors = _validator.ValidateExhibition(exhibitionDTO);
 
             if (validationErrors != String.Empty)
             {

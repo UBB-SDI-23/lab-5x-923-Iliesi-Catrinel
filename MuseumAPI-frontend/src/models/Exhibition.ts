@@ -8,4 +8,6 @@ export interface Exhibition {
     museum: Museum;
     startDate: Date;
     endDate: Date;
+
+    [key: string]: any;
 }
