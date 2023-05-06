@@ -1,16 +1,18 @@
 import { Button, Card, CardActions, CardContent, CircularProgress, Container, IconButton, TextField } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import axios, { AxiosError } from "axios";
 import { Artist } from "../../models/Artist";
 import { BACKEND_API_URL } from "../../constants";
-import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { SnackbarContext } from "../SnackbarContext";
+import { getAuthToken } from "../../auth";
 
 export const ArtistUpdate = () => {
     const { artistId } = useParams<{ artistId: string }>();
     const navigate = useNavigate();
+    const openSnackbar = useContext(SnackbarContext);
 
     const [loading, setLoading] = useState(false);
     const [artist, setArtist] = useState<Artist>({
@@ -28,8 +30,16 @@ export const ArtistUpdate = () => {
 
     useEffect(() => {
         const fetchArtist = async () => {
-            const response = await fetch(`${BACKEND_API_URL}/artists/${artistId}/`);
-            const artist = await response.json();
+            const response = await axios.get<Artist>(
+                `${BACKEND_API_URL}/artists/${artistId}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${getAuthToken()}`,
+                    },
+                }
+            );
+            const artist = response.data;
+
             setArtist({
                 id: artist.id,
                 firstName: artist.firstName,
@@ -42,38 +52,41 @@ export const ArtistUpdate = () => {
                 museums: artist.museums,
                 exhibitions: artist.exhibitions,
             })
-            setLoading(false);
-            console.log(artist);
+
+            setLoading(false); 
         };
         fetchArtist();
     }, [artistId]);
 
-    const displayError = (message: string) => {
-		toast.error(message, {
-		  position: toast.POSITION.TOP_CENTER,
-		});
-	  };	  
-
-	const displaySuccess = (message: string) => {
-		toast.success(message, {
-		  position: toast.POSITION.TOP_CENTER,
-		});
-	};
-
-    const handleUpdate =async (event: { preventDefault: () => void }) => {
+    const handleUpdate = async (event: { preventDefault: () => void }) => {
         event.preventDefault();
         try {
-            await axios.put(`${BACKEND_API_URL}/artists/${artistId}/`, artist).then(() => {
-                displaySuccess("Artist updated successfully!");
-              })
-              .catch((reason: AxiosError) => {
-                displayError("Failed to update artist!");
-                console.log(reason.message);
-              });
-            navigate("/artists");
+            await axios
+                .put(`${BACKEND_API_URL}/artists/${artistId}`, artist, {
+                    headers: {
+                        Authorization: `Bearer ${getAuthToken()}`,
+                    },
+                })
+                .then(() => {
+                    openSnackbar("success", "Artist updated successfully!");
+                    navigate("/artists");
+                })
+                .catch((reason: AxiosError) => {
+                    console.log(reason.message);
+                    openSnackbar(
+                        "error",
+                        "Failed to update artist!\n" +
+                            (String(reason.response?.data).length > 255
+                                ? reason.message
+                                : reason.response?.data)
+                    );
+                });
         } catch (error) {
-            displayError("Failed to update artist!");
             console.log(error);
+            openSnackbar(
+                "error",
+                "Failed to update artist due to an unknown error!"
+            );
         }
     };
 
@@ -89,6 +102,7 @@ export const ArtistUpdate = () => {
 					<IconButton component={Link} sx={{ mr: 3 }} to={`/artists`}>
 						<ArrowBackIcon />
 					</IconButton>{" "}
+                    <h3>Edit Artist</h3>
 					<form onSubmit={handleUpdate}>
                     <TextField
 							id="firstName"
@@ -147,12 +161,12 @@ export const ArtistUpdate = () => {
 					</form>
 				</CardContent>
 				<CardActions>
-                <CardActions sx={{ justifyContent: "center" }}>
-					<Button type="submit" onClick={handleUpdate} variant="contained">Update</Button>
-					<Button onClick={handleCancel} variant="contained">Cancel</Button>
+                <CardActions sx={{ mb: 1, ml: 1, mt: 1 }}>
+					<Button type="submit" onClick={handleUpdate} variant="contained" sx={{ mr: 2 }}>Update</Button>
+					<Button onClick={handleCancel} variant="contained" color="error">Cancel</Button>
 				</CardActions>
                 </CardActions>
 			</Card>
 		</Container>
-    )
+    );
 };

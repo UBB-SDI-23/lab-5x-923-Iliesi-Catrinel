@@ -1,4 +1,4 @@
-import { SetStateAction, useState } from 'react';
+import { useState } from 'react';
 import { TextField, Button, Container, TableContainer, Table, colors, TableHead, TableCell, TableRow, TableBody, Tooltip, IconButton, Paper } from '@mui/material';
 import ReadMoreIcon from "@mui/icons-material/ReadMore"
 import EditIcon from "@mui/icons-material/Edit"
@@ -6,6 +6,7 @@ import DeleteForeverIcon from "@mui/icons-material/DeleteForever"
 import { Link } from "react-router-dom";
 import { BACKEND_API_URL } from '../../constants';
 import { Painting } from '../../models/Painting';
+import { getAuthToken } from '../../auth';
 
 export const PaintingFilter = () => {
     const [year, setYear] = useState<number | null>(null);
@@ -20,16 +21,21 @@ export const PaintingFilter = () => {
     const handleFilterClick = () => {
         if (year !== null) {
             setLoading(true);
-            fetch(`${BACKEND_API_URL}/paintings/filter?year=${year}`)
-                .then(response => response.json())
-                .then(data => {
-                    setLoading(false);
-                    setPaintings(data);
-                })
-                .catch(() => {
-                    setLoading(false);
-                    setPaintings([]);
-                });
+            fetch(`${BACKEND_API_URL}/paintings/filter?year=${year}`,
+            {
+                headers: {
+                    Authorization: `Bearer ${getAuthToken()}`,
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                setLoading(false);
+                setPaintings(data);
+            })
+            .catch(() => {
+                setLoading(false);
+                setPaintings([]);
+            });
         }
     };
 
@@ -60,6 +66,8 @@ export const PaintingFilter = () => {
 								<TableCell align="left">Subject</TableCell>
 								<TableCell align="left">Medium</TableCell>
 								<TableCell align="left">Description</TableCell>
+                                <TableCell align="left">Artist</TableCell>
+                                <TableCell align="center">Operations</TableCell>
 							</TableRow>
 						</TableHead>
 						<TableBody>
@@ -77,8 +85,9 @@ export const PaintingFilter = () => {
 								    <TableCell align="left">{painting.height}</TableCell>
 								    <TableCell align="left">{painting.subject}</TableCell>
 								    <TableCell align="left">{painting.medium}</TableCell>
-                                    <TableCell align="right">{painting.description}</TableCell>
-									<TableCell align="right">
+                                    <TableCell align="left">{painting.description}</TableCell>
+									<TableCell align="left">{painting.artist?.firstName + " " + painting.artist?.lastName}</TableCell>
+                                    <TableCell align="center">
 										<IconButton
                                             component={Link}
                                             sx={{ mr: 3 }}

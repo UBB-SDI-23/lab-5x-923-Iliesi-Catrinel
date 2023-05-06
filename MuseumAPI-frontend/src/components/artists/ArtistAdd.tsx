@@ -1,17 +1,19 @@
-import { Autocomplete, Button, Card, CardActions, CardContent, IconButton, TextField } from "@mui/material";
+import { Button, Card, CardActions, CardContent, IconButton, TextField } from "@mui/material";
 import { Container } from "@mui/system";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import axios, { AxiosError, AxiosResponse } from "axios";
 import { BACKEND_API_URL } from "../../constants";
 import { Artist } from "../../models/Artist";
 import { debounce } from "lodash";
-import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { SnackbarContext } from "../SnackbarContext";
+import { getAuthToken } from "../../auth";
 
 export const ArtistAdd = () => {
 	const navigate = useNavigate();
+	const openSnackbar = useContext(SnackbarContext);
 
 	const [artist, setArtist] = useState<Artist>({
 		firstName: "",
@@ -22,64 +24,37 @@ export const ArtistAdd = () => {
         movement: ""
 	});
 
-	const [artistNames, setArtistNames] = useState<Artist[]>([]);
-
-	const fetchSuggestions = async (query: string) => {
-		try {
-			const response = await axios.get<Artist[]>(
-				`${BACKEND_API_URL}/artists/autocomplete?query=${query}`
-			);
-			const data = await response.data;
-			setArtistNames(data);
-		} catch (error) {
-			console.error("Error fetching suggestions:", error);
-		}
-	};
-
-	const debouncedFetchSuggestions = useCallback(debounce(fetchSuggestions, 500), []);
-
-	useEffect(() => {
-		return () => {
-			debouncedFetchSuggestions.cancel();
-		};
-	}, [debouncedFetchSuggestions]);
-
-	const handleInputChange = (event: any, value: any, reason: any) => {
-		console.log("input", value, reason);
-
-		if (reason === "input") {
-			debouncedFetchSuggestions(value);
-		}
-	};
-
-	const displayError = (message: string) => {
-		toast.error(message, {
-		  position: toast.POSITION.TOP_CENTER,
-		});
-	  };	  
-
-	const displaySuccess = (message: string) => {
-		toast.success(message, {
-		  position: toast.POSITION.TOP_CENTER,
-		});
-	};	 
-
 	const addArtist = async (event: { preventDefault: () => void }) => {
-		event.preventDefault();
-		try {
-			await axios.post(`${BACKEND_API_URL}/artists/`, artist).then(() => {
-                displaySuccess("Artist added successfully!");
-              })
-              .catch((reason: AxiosError) => {
-                displayError("Failed to add artist!");
-                console.log(reason.message);
-              });
-			navigate("/artists");
-		} catch (error) {
-			displayError("Failed to add artist!");
-			console.log(error);
-		}
-	};
+        event.preventDefault();
+        try {
+            await axios
+                .post(`${BACKEND_API_URL}/artists`, artist, {
+                    headers: {
+                        Authorization: `Bearer ${getAuthToken()}`,
+                    },
+                })
+                .then(() => {
+                    openSnackbar("success", "Artist added successfully!");
+                    navigate("/artists");
+                })
+                .catch((reason: AxiosError) => {
+                    console.log(reason.message);
+                    openSnackbar(
+                        "error",
+                        "Failed to add artist!\n" +
+                            (String(reason.response?.data).length > 255
+                                ? reason.message
+                                : reason.response?.data)
+                    );
+                });
+        } catch (error) {
+            console.log(error);
+            openSnackbar(
+                "error",
+                "Failed to add artist due to an unknown error!"
+            );
+        }
+    };
 
 	return (
 		<Container>
@@ -88,20 +63,15 @@ export const ArtistAdd = () => {
 					<IconButton component={Link} sx={{ mr: 3 }} to={`/artists`}>
 						<ArrowBackIcon />
 					</IconButton>{" "}
-					<form onSubmit={addArtist}>
-						<Autocomplete
+					<h1>Add Artist</h1>
+					<form id="addArtistForm" onSubmit={addArtist}>
+						<TextField
 							id="firstName"
-							options={artistNames}
-							getOptionLabel={(option) => `${option.firstName}`}
-							renderInput={(params) => <TextField {...params} label="First Name" variant="outlined" fullWidth sx={{ mb: 2 }}/>}
-							filterOptions={(x) => x}
-							onInputChange={handleInputChange}
-							onChange={(event, value) => {
-								if (value) {
-									console.log(value);
-									setArtist({ ...artist, firstName: value.firstName });
-								}
-							}}
+							label="First Name"
+							variant="outlined"
+							fullWidth
+							sx={{ mb: 2 }}
+							onChange={(event) => setArtist({ ...artist, firstName: event.target.value })}
 						/>
 						<TextField
 							id="lastName"
@@ -143,10 +113,11 @@ export const ArtistAdd = () => {
 							sx={{ mb: 2 }}
 							onChange={(event) => setArtist({ ...artist, movement: event.target.value })}
 						/>
-						<Button type="submit">Add Artist</Button>
 					</form>
 				</CardContent>
-				<CardActions></CardActions>
+				<CardActions sx={{ mb: 1, ml: 1, mt: 1 }}>
+					<Button type="submit" form="addArtistForm" variant="contained">Add Artist</Button>
+				</CardActions>
 			</Card>
 		</Container>
 	);

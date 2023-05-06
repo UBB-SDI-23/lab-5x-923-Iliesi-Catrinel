@@ -1,6 +1,6 @@
 import { Autocomplete, Button, Card, CardActions, CardContent, IconButton, TextField } from "@mui/material";
 import { Container } from "@mui/system";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import axios, { AxiosError, AxiosResponse } from "axios";
@@ -10,9 +10,13 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Painting } from "../../models/Painting";
 import { Artist } from "../../models/Artist";
+import { SnackbarContext } from "../SnackbarContext";
+import { getAuthToken } from "../../auth";
 
 export const PaintingAdd = () => {
 	const navigate = useNavigate();
+	const openSnackbar = useContext(SnackbarContext);
+	const [artists, setArtists] = useState<Artist[]>([]);
 
 	const [painting, setPainting] = useState<Painting>({
 		title: "",
@@ -24,21 +28,80 @@ export const PaintingAdd = () => {
         artistId: 0
 	});
 
-    const [artistNames, setArtistNames] = useState<Artist[]>([]);
+	const addPainting = async (event: { preventDefault: () => void }) => {
+        event.preventDefault();
+        try {
+            await axios
+                .post(`${BACKEND_API_URL}/paintings`, painting, {
+                    headers: {
+                        Authorization: `Bearer ${getAuthToken()}`,
+                    },
+                })
+                .then(() => {
+                    openSnackbar("success", "Painting added successfully!");
+                    navigate("/paintings");
+                })
+                .catch((reason: AxiosError) => {
+                    console.log(reason.message);
+                    openSnackbar(
+                        "error",
+                        "Failed to add painting!\n" +
+                            (String(reason.response?.data).length > 255
+                                ? reason.message
+                                : reason.response?.data)
+                    );
+                });
+        } catch (error) {
+            console.log(error);
+            openSnackbar(
+                "error",
+                "Failed to add painting due to an unknown error!"
+            );
+        }
+    };
 
-    const fetchArtistSuggestions = async (query: string) => {
+	useEffect(() => {
+        const fetchArtists = async () => {
+            try {
+                const response = await axios.get<Artist[]>(
+                    `${BACKEND_API_URL}/artists/0/10`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${getAuthToken()}`,
+                        },
+                    }
+                );
+                setArtists(response.data);
+            } catch (error) {
+                console.log("Error fetching artists:", error);
+            }
+        };
+        fetchArtists();
+    }, []);
+
+	const fetchSuggestions = async (query: string) => {
         try {
             const response = await axios.get<Artist[]>(
-                `${BACKEND_API_URL}/paintings/autocomplete-artist?query=${query}`
+                `${BACKEND_API_URL}/artists/search?query=${query}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${getAuthToken()}`,
+                    },
+                }
             );
-            const data = await response.data;
-            setArtistNames(data);
+
+            const data = response.data;
+            const removedDupes = data.filter(
+                (v, i, a) => a.findIndex((v2) => v2.name === v.name) === i
+            );
+
+            setArtists(removedDupes);
         } catch (error) {
             console.error("Error fetching artist suggestions:", error);
         }
     };
 
-    const debouncedFetchArtistSuggestions = useCallback(debounce(fetchArtistSuggestions, 500), []);
+    const debouncedFetchArtistSuggestions = useCallback(debounce(fetchSuggestions, 250), []);
 
     useEffect(() => {
         return () => {
@@ -47,51 +110,24 @@ export const PaintingAdd = () => {
     }, [debouncedFetchArtistSuggestions]);
 
     const handleInputChange = (event: any, value: any, reason: any) => {
+		if (value.length < 3) return;
         console.log("input", value, reason);
 
         if (reason === "input") {
             debouncedFetchArtistSuggestions(value);
         }
-    };
-
-	const displayError = (message: string | any) => {
-		toast.error(message, {
-		  position: toast.POSITION.TOP_CENTER,
-		});
-	  };	  
-
-	const displaySuccess = (message: string) => {
-		toast.success(message, {
-		  position: toast.POSITION.TOP_CENTER,
-		});
-	};	 
-
-	const addPainting = async (event: { preventDefault: () => void }) => {
-		event.preventDefault();
-		try {
-			await axios.post(`${BACKEND_API_URL}/paintings/`, painting).then(() => {
-                displaySuccess("Painting added successfully!");
-              })
-              .catch((reason: AxiosError) => {
-                displayError("Failed to add painting!");
-                console.log(reason.message);
-              });
-			navigate("/paintings");
-		} catch (error) {
-			displayError("Failed to add painting!");
-			console.log(error);
-		}
-	};
+    }; 
 
 	return (
 		<Container>
 			<Card>
-				<CardContent>
+				<CardContent sx={{ p: 2 }}>
 					<IconButton component={Link} sx={{ mr: 3 }} to={`/paintings`}>
 						<ArrowBackIcon />
 					</IconButton>{" "}
-					<form onSubmit={addPainting}>
-                    <TextField
+					<h1>Add Painting</h1>
+					<form id="addPaintingForm" onSubmit={addPainting}>
+                    	<TextField
 							id="title"
 							label="Title"
 							variant="outlined"
@@ -139,24 +175,42 @@ export const PaintingAdd = () => {
 							sx={{ mb: 2 }}
 							onChange={(event) => setPainting({ ...painting, description: event.target.value })}
 						/>
-                        <Autocomplete style={{margin: 10}}
-                                id="artistId"
-                                options={artistNames}
-                                getOptionLabel={(option) => `${option.firstName} ${option.lastName}`}
-                                renderInput={(params) => <TextField {...params} label="Artist" variant="outlined" />}
-                                filterOptions={() => artistNames}
-                                onInputChange={handleInputChange}
-                                onChange={(event, value) => {
-                                    if (value) {
-                                        console.log(value);
-                                        setPainting({ ...painting, artistId: value.id ?? 0 });
-                                    }
-                                }}
+                        <Autocomplete
+                            id="artistId"
+                            sx={{ mb: 2 }}
+                            options={artists}
+                            getOptionLabel={(option) => `${option.firstName} ${option.lastName}`}
+                            renderOption={(props, option) => {
+                                return (
+                                    <li {...props} key={option.id}>
+                                        {option.name}
+                                    </li>
+                                );
+                            }}
+                            renderInput={(params) => (
+                                <TextField
+                                    {...params}
+                                    label="Artist"
+                                    variant="outlined"
+                                />
+                            )}
+                            filterOptions={(x) => x}
+                            onInputChange={handleInputChange}
+                            onChange={(event, value) => {
+                                if (value) {
+                                    console.log(value);
+                                    setPainting({
+                                        ...painting,
+                                        artistId: value.id ?? 0,
+                                    });
+                                }
+                            }}
                         />
-						<Button type="submit">Add Painting</Button>
 					</form>
 				</CardContent>
-				<CardActions></CardActions>
+				<CardActions sx={{ mb: 1, ml: 1, mt: 1 }}>
+					<Button type="submit" variant="contained" id="addPaintingForm">Add Painting</Button>
+				</CardActions>
 			</Card>
 		</Container>
 	);

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -25,6 +26,18 @@ namespace MuseumAPI.Controllers
             _validator = new Validate();
         }
 
+        // GET: api/Stores/count/10
+        [HttpGet("count/{pageSize}")]
+        public async Task<int> GetTotalNumberOfPages(int pageSize = 10)
+        {
+            int total = await _context.Museums.CountAsync();
+            int totalPages = total / pageSize;
+            if (total % pageSize > 0)
+                totalPages++;
+
+            return totalPages;
+        }
+
         // GET: api/Museums
         [HttpGet]
         public async Task<ActionResult<IEnumerable<MuseumDTO>>> GetMuseums()
@@ -39,15 +52,17 @@ namespace MuseumAPI.Controllers
 
         // GET: api/Museums?page=0&pageSize=10
         [HttpGet("{page}/{pageSize}")]
-        public async Task<ActionResult<IEnumerable<MuseumDTO>>> GetMuseumsPagination(int page = 0, int pageSize = 10)
+        public async Task<ActionResult<IEnumerable<Museum>>> GetMuseumsPagination(int page = 0, int pageSize = 10)
         {
             if (_context.Museums == null)
                 return NotFound();
 
             return await _context.Museums
+                .Include(m => m.Artists)
+                .Include(m => m.Exhibitions)
+                .Include(m => m.User)
                 .Skip(page * pageSize)
                 .Take(pageSize)
-                .Select(x => MuseumToDTO(x))
                 .ToListAsync();
         }
 
@@ -73,7 +88,7 @@ namespace MuseumAPI.Controllers
             return museum;
         }
 
-        [HttpGet("autocomplete")]
+        [HttpGet("search")]
         public async Task<ActionResult<IEnumerable<MuseumDTO>>> AutocompleteName(string query)
         {
 

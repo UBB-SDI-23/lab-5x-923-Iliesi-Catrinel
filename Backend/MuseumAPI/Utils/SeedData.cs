@@ -10,6 +10,8 @@ namespace MuseumAPI.Utils
         {
             using (var context = new MuseumContext(serviceProvider.GetRequiredService<DbContextOptions<MuseumContext>>()))
             {
+                return;
+
                 SeedArtists(context);
                 SeedPaintings(context);
                 SeedMuseums(context);

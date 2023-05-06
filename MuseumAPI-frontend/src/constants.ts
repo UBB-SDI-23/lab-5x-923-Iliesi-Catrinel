@@ -8,3 +8,9 @@ export function formatDate(date: Date | string | undefined) {
 	return date == null || date == undefined	? "N/A"
 		: new Date(date).toLocaleString()
 }
+
+export const getEnumValues = (e: any) => {
+	return Object.keys(e)
+	  .filter((key) => isNaN(Number(key)))
+	  .map((key) => e[key]);
+  };

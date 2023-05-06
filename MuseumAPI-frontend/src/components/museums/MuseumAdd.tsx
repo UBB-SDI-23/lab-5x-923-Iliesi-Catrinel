@@ -1,6 +1,6 @@
 import { Autocomplete, Button, Card, CardActions, CardContent, IconButton, TextField } from "@mui/material";
 import { Container } from "@mui/system";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import axios, { AxiosError, AxiosResponse } from "axios";
@@ -8,9 +8,12 @@ import { BACKEND_API_URL } from "../../constants";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Museum } from "../../models/Museum";
+import { SnackbarContext } from "../SnackbarContext";
+import { getAuthToken } from "../../auth";
 
 export const MuseumAdd = () => {
 	const navigate = useNavigate();
+	const openSnackbar = useContext(SnackbarContext);
 
 	const [museum, setMuseum] = useState<Museum>({
 		name: "",
@@ -18,36 +21,39 @@ export const MuseumAdd = () => {
         foundationDate: new Date(),
         architect: "",
         website: "",
-	});
-
-	const displayError = (message: string) => {
-		toast.error(message, {
-		  position: toast.POSITION.TOP_CENTER,
-		});
-	  };	  
-
-	const displaySuccess = (message: string) => {
-		toast.success(message, {
-		  position: toast.POSITION.TOP_CENTER,
-		});
-	};	 
+	});	 
 
 	const addMuseum = async (event: { preventDefault: () => void }) => {
-		event.preventDefault();
-		try {
-			await axios.post(`${BACKEND_API_URL}/museums/`, museum).then(() => {
-                displaySuccess("Museum added successfully!");
-              })
-              .catch((reason: AxiosError) => {
-                displayError("Failed to add museum!");
-                console.log(reason.message);
-              });
-			navigate("/museums");
-		} catch (error) {
-			displayError("Failed to add museum!");
-			console.log(error);
-		}
-	};
+        event.preventDefault();
+        try {
+            await axios
+                .post(`${BACKEND_API_URL}/museums`, museum, {
+                    headers: {
+                        Authorization: `Bearer ${getAuthToken()}`,
+                    },
+                })
+                .then(() => {
+                    openSnackbar("success", "Museum added successfully!");
+                    navigate("/museums");
+                })
+                .catch((reason: AxiosError) => {
+                    console.log(reason.message);
+                    openSnackbar(
+                        "error",
+                        "Failed to add museum!\n" +
+                            (String(reason.response?.data).length > 255
+                                ? reason.message
+                                : reason.response?.data)
+                    );
+                });
+        } catch (error) {
+            console.log(error);
+            openSnackbar(
+                "error",
+                "Failed to add museum due to an unknown error!"
+            );
+        }
+    };
 
 	return (
 		<Container>
@@ -56,7 +62,7 @@ export const MuseumAdd = () => {
 					<IconButton component={Link} sx={{ mr: 3 }} to={`/museums`}>
 						<ArrowBackIcon />
 					</IconButton>{" "}
-					<form onSubmit={addMuseum}>
+					<form id="addMuseumForm" onSubmit={addMuseum}>
 						<TextField
 							id="name"
 							label="Name"
@@ -97,10 +103,11 @@ export const MuseumAdd = () => {
 							sx={{ mb: 2 }}
 							onChange={(event) => setMuseum({ ...museum, website: event.target.value })}
 						/>
-						<Button type="submit">Add Museum</Button>
 					</form>
 				</CardContent>
-				<CardActions></CardActions>
+				<CardActions sx={{ mb: 1, ml: 1, mt: 1 }}>
+					<Button type="submit" variant="contained" id="addMuseumForm">Add Museum</Button>
+				</CardActions>
 			</Card>
 		</Container>
 	);

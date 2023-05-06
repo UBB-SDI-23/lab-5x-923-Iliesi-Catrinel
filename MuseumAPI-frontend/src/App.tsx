@@ -1,5 +1,9 @@
 import * as React from "react";
+import { useState } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Snackbar from "@mui/material/Snackbar";
+import MuiAlert, { AlertProps, AlertColor } from "@mui/material/Alert";
+import { SnackbarContext } from "./components/SnackbarContext";
 import { AppMenu } from "./components/AppMenu";
 import { AppHome } from "./components/AppHome";
 import { AllArtists } from "./components/artists/AllArtists";
@@ -22,44 +26,107 @@ import { MuseumDelete } from "./components/museums/MuseumDelete";
 import { MuseumAdd } from "./components/museums/MuseumAdd";
 import { MuseumUpdate } from "./components/museums/MuseumUpdate";
 import { AllExhibitions } from "./components/exhibitions/AllExhibitions";
-import { AddMuseumsToArtist } from "./components/artists/AddMuseumsToArtist";
+import { ArtistExhibitionAdd } from "./components/artists/ArtistExhibitionAdd";
+import { UserDetails } from "./components/users/UserDetails";
+import { UserRegister } from "./components/users/UserRegister";
+import { UserRegisterConfirm } from "./components/users/UserRegisterConfirm";
+import { UserLogin } from "./components/users/UserLogin";
+import { MuseumExhibitionAdd } from "./components/museums/MuseumExhibitionAdd";
+import { ExhibitionAdd } from "./components/exhibitions/ExhibitionAdd";
+import { ExhibitionUpdate } from "./components/exhibitions/ExhibitionUpdate";
+import { ExhibitionDetails } from "./components/exhibitions/ExhibitionDetails";
+import { ExhibitionDelete } from "./components/exhibitions/ExhibitionDelete";
 
+const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(
+    props,
+    ref
+) {
+    return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+});
 
 function App() {
+	const [open, setOpen] = useState(false);
+    const [severity, setSeverity] = useState<AlertColor>("success");
+    const [message, setMessage] = useState("placeholder");
 
-  return (
+    const openSnackbar = (severity: AlertColor, message: string) => {
+        handleClose();
+
+        setTimeout(() => {
+            setSeverity(severity);
+            setMessage(message);
+            setOpen(true);
+        }, 250);
+    };
+
+    const handleClose = (
+        event?: React.SyntheticEvent | Event,
+        reason?: string
+    ) => {
+        if (reason === "clickaway") {
+            return;
+        }
+
+        setOpen(false);
+    };
+
+  	return (
 		<React.Fragment>
-			<ToastContainer />
-			<Router>
-				<AppMenu />
+			<Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
+                <Alert
+                    onClose={handleClose}
+                    severity={severity}
+                    sx={{ width: "100%", whiteSpace: "pre-wrap" }}
+                >
+                    {message}
+                </Alert>
+            </Snackbar>
 
-				<Routes>
-					<Route path="/" element={<AppHome />} />
-					<Route path="/artists" element={<AllArtists />} />
-					<Route path="/artists/:artistId/details" element={<ArtistDetails />} />
-					<Route path="/artists/add" element={<ArtistAdd />} /> 
-					<Route path="/artists/:artistId/delete" element={<ArtistDelete />} />
-					<Route path="/artists/:artistId/edit" element={<ArtistUpdate />} />
-					<Route path="/artists/getbypaintingage" element={<ArtistAveragePaintingAge />} />
-					<Route path="/artists/getbypaintingheight" element={<ArtistAveragePaintingHeight />} />
-					<Route path="/artists/add-museums" element={<AddMuseumsToArtist />} />
+			<SnackbarContext.Provider value={openSnackbar}>
+				<Router>
+					<AppMenu />
 
-					<Route path="/paintings" element={<AllPaintings />} />
-					<Route path="/paintings/:paintingId/details" element={<PaintingDetails />} />
-					<Route path="/paintings/add" element={<PaintingAdd />} /> 
-					<Route path="/paintings/:paintingId/delete" element={<PaintingDelete />} />
-					<Route path="/paintings/:paintingId/edit" element={<PaintingUpdate />} />
-					<Route path="/paintings/filter-year" element={<PaintingFilter />} />
+					<Routes>
+						<Route path="/" element={<AppHome />} />
 
-					<Route path="/museums" element={<AllMuseums />} />
-					<Route path="/museums/:museumId/details" element={<MuseumDetails />} />
-					<Route path="/museums/add" element={<MuseumAdd />} /> 
-					<Route path="/museums/:museumId/delete" element={<MuseumDelete />} />
-					<Route path="/museums/:museumId/edit" element={<MuseumUpdate />} />
-				</Routes>
-			</Router>
+						<Route path="/users/:userId/details" element={<UserDetails />}/>
+                        <Route path="/users/register" element={<UserRegister />}/>
+                        <Route path="/users/register/confirm/:code" element={<UserRegisterConfirm />}/>
+                        <Route path="/users/login" element={<UserLogin />} />
+
+						<Route path="/artists" element={<AllArtists />} />
+						<Route path="/artists/:artistId/details" element={<ArtistDetails />} />
+						<Route path="/artists/add" element={<ArtistAdd />} /> 
+						<Route path="/artists/:artistId/delete" element={<ArtistDelete />} />
+						<Route path="/artists/:artistId/edit" element={<ArtistUpdate />} />
+						<Route path="/agereport" element={<ArtistAveragePaintingAge />} />
+						<Route path="/heightreport" element={<ArtistAveragePaintingHeight />} />
+						<Route path="/artists/:artistId/addexhibition" element={<ArtistExhibitionAdd />} />
+
+						<Route path="/paintings" element={<AllPaintings />} />
+						<Route path="/paintings/:paintingId/details" element={<PaintingDetails />} />
+						<Route path="/paintings/add" element={<PaintingAdd />} /> 
+						<Route path="/paintings/:paintingId/delete" element={<PaintingDelete />} />
+						<Route path="/paintings/:paintingId/edit" element={<PaintingUpdate />} />
+						<Route path="/filterpaintings" element={<PaintingFilter />} />
+
+						<Route path="/museums" element={<AllMuseums />} />
+						<Route path="/museums/:museumId/details" element={<MuseumDetails />} />
+						<Route path="/museums/add" element={<MuseumAdd />} /> 
+						<Route path="/museums/:museumId/delete" element={<MuseumDelete />} />
+						<Route path="/museums/:museumId/edit" element={<MuseumUpdate />} />
+						<Route path="/museums/:museumId/addexhibition" element={<MuseumExhibitionAdd />}/>
+
+						<Route path="/exhibitions" element={<AllExhibitions />} />
+						<Route path="/exhibitions/:artistId/:museumId/details" element={<ExhibitionDetails />} />
+						<Route path="/exhibitions/add" element={<ExhibitionAdd />} /> 
+						<Route path="/exhibitions/:artistId/:museumId/delete" element={<ExhibitionDelete />} />
+						<Route path="/exhibitions/:artistId/:museumId/edit" element={<ExhibitionUpdate />} />
+					</Routes>
+				</Router>
+			</SnackbarContext.Provider>
 		</React.Fragment>
 	);
 }
 
-export default App
+export default App;

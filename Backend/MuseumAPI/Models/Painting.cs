@@ -14,5 +14,8 @@
 
         // Hiden from the API because it's not in the DTO
         public virtual Artist Artist { get; set; } = null!;
+
+        public virtual long? UserId { get; set; }
+        public virtual User User { get; set; } = null!;
     }
 }

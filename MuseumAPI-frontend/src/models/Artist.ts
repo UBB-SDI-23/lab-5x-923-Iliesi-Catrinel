@@ -1,6 +1,7 @@
 import { Exhibition } from "./Exhibition";
 import { Museum } from "./Museum";
 import { Painting } from "./Painting";
+import { User } from "./User";
 
 export interface Artist {
     id?: number;
@@ -13,6 +14,9 @@ export interface Artist {
     paintings?: Painting[];
     museums?: Museum[];
     exhibitions?: Exhibition[];
+
+    userId?: number;
+    user?: User;
 
     [key: string]: any;
 }

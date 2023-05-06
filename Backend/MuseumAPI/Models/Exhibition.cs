@@ -11,5 +11,7 @@
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
 
+        public virtual long? UserId { get; set; }
+        public virtual User User { get; set; } = null!;
     }
 }
