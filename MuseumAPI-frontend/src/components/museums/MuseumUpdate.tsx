@@ -1,5 +1,5 @@
 import { Button, Card, CardActions, CardContent, CircularProgress, Container, IconButton, TextField } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import axios, { AxiosError } from "axios";
@@ -8,10 +8,13 @@ import { BACKEND_API_URL } from "../../constants";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Museum } from "../../models/Museum";
+import { SnackbarContext } from "../SnackbarContext";
+import { getAuthToken } from "../../auth";
 
 export const MuseumUpdate = () => {
     const { museumId } = useParams<{ museumId: string }>();
     const navigate = useNavigate();
+    const openSnackbar = useContext(SnackbarContext);
 
     const [loading, setLoading] = useState(false);
     const [museum, setMuseum] = useState<Museum>({
@@ -27,8 +30,16 @@ export const MuseumUpdate = () => {
 
     useEffect(() => {
         const fetchMuseum = async () => {
-            const response = await fetch(`${BACKEND_API_URL}/museums/${museumId}/`);
-            const museum = await response.json();
+            const response = await axios.get<Museum>(
+                `${BACKEND_API_URL}/museums/${museumId}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${getAuthToken()}`,
+                    },
+                }
+            );
+
+            const museum = response.data;
             setMuseum({
                 id: museum.id,
                 name: museum.name,
@@ -38,39 +49,42 @@ export const MuseumUpdate = () => {
                 website: museum.website,
                 artists: museum.artists,
                 exhibitions: museum.exhibitions,
-            })
+            });
+
             setLoading(false);
-            console.log(museum);
         };
         fetchMuseum();
     }, [museumId]);
 
-    const displayError = (message: string) => {
-		toast.error(message, {
-		  position: toast.POSITION.TOP_CENTER,
-		});
-	  };	  
-
-	const displaySuccess = (message: string) => {
-		toast.success(message, {
-		  position: toast.POSITION.TOP_CENTER,
-		});
-	};
-
-    const handleUpdate =async (event: { preventDefault: () => void }) => {
+    const handleUpdate = async (event: { preventDefault: () => void }) => {
         event.preventDefault();
         try {
-            await axios.put(`${BACKEND_API_URL}/museums/${museumId}/`, museum).then(() => {
-                displaySuccess("Museum updated successfully!");
-              })
-              .catch((reason: AxiosError) => {
-                displayError("Failed to update museum!");
-                console.log(reason.message);
-              });
-            navigate("/museums");
+            await axios
+                .put(`${BACKEND_API_URL}/museums/${museumId}`, museum, {
+                    headers: {
+                        Authorization: `Bearer ${getAuthToken()}`,
+                    },
+                })
+                .then(() => {
+                    openSnackbar("success", "Museum updated successfully!");
+                    navigate("/museums");
+                })
+                .catch((reason: AxiosError) => {
+                    console.log(reason.message);
+                    openSnackbar(
+                        "error",
+                        "Failed to update museum!\n" +
+                            (String(reason.response?.data).length > 255
+                                ? reason.message
+                                : reason.response?.data)
+                    );
+                });
         } catch (error) {
-            displayError("Failed to update museum!");
             console.log(error);
+            openSnackbar(
+                "error",
+                "Failed to update museum due to an unknown error!"
+            );
         }
     };
 
@@ -86,6 +100,7 @@ export const MuseumUpdate = () => {
 					<IconButton component={Link} sx={{ mr: 3 }} to={`/museums`}>
 						<ArrowBackIcon />
 					</IconButton>{" "}
+                    <h3>Edit Museum</h3>
 					<form onSubmit={handleUpdate}>
                     <TextField
 							id="name"
@@ -134,12 +149,10 @@ export const MuseumUpdate = () => {
 						/>
 					</form>
 				</CardContent>
-				<CardActions>
-                <CardActions sx={{ justifyContent: "center" }}>
-					<Button type="submit" onClick={handleUpdate} variant="contained">Update</Button>
-					<Button onClick={handleCancel} variant="contained">Cancel</Button>
+                <CardActions sx={{ mb: 1, ml: 1, mt: 1 }}>
+					<Button type="submit" onClick={handleUpdate} variant="contained" sx={{ mr: 2 }}>Update</Button>
+					<Button onClick={handleCancel} variant="contained" color="error">Cancel</Button>
 				</CardActions>
-                </CardActions>
 			</Card>
 		</Container>
     )

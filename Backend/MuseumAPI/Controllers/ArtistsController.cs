@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.CodeAnalysis.VisualBasic.Syntax;
@@ -25,6 +26,18 @@ namespace MuseumAPI.Controllers
             _validator = new Validate();
         }
 
+        // GET: api/Artists/count/10
+        [HttpGet("count/{pageSize}")]
+        public async Task<int> GetTotalNumberOfPages(int pageSize = 10)
+        {
+            int total = await _context.Artists.CountAsync();
+            int totalPages = total / pageSize;
+            if (total % pageSize > 0)
+                totalPages++;
+
+            return totalPages;
+        }
+
         // GET: api/Artists
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ArtistDTO>>> GetArtists()
@@ -34,21 +47,23 @@ namespace MuseumAPI.Controllers
                 return NotFound();
             }
 
-            return await _context.Artists.Select(x => ArtistToDTO(x)).ToListAsync();
+            return await _context.Artists.Include(a => a.Paintings).Select(x => ArtistToDTO(x)).ToListAsync();
         }
 
         // GET: api/Artists?page=0&pageSize=10
         [HttpGet("{page}/{pageSize}")]
-        public async Task<ActionResult<IEnumerable<ArtistDTO>>> GetArtistsPagination(int page = 0, int pageSize = 10)
+        public async Task<ActionResult<IEnumerable<Artist>>> GetArtistsPagination(int page = 0, int pageSize = 10)
         {
             if (_context.Artists == null)
                 return NotFound();
 
             return await _context.Artists
                 .Include(a => a.Paintings)
+                .Include(a => a.Museums)
+                .Include(a => a.Exhibitions)
+                .Include(a => a.User)
                 .Skip(page * pageSize)
                 .Take(pageSize)
-                .Select(x => ArtistToDTO(x))
                 .ToListAsync();
         }
 
@@ -64,6 +79,7 @@ namespace MuseumAPI.Controllers
             var artist = await _context.Artists
                 .Include(a => a.Paintings)
                 .Include(a => a.Museums)
+                .Include(a => a.Exhibitions)
                 .FirstOrDefaultAsync(p => p.Id == id);
 
             if (artist == null)
@@ -74,7 +90,7 @@ namespace MuseumAPI.Controllers
             return artist;
         }
 
-        [HttpGet("autocomplete")]
+        [HttpGet("search")]
         public async Task<ActionResult<IEnumerable<ArtistDTO>>> AutocompleteName(string query)
         {
 
@@ -84,7 +100,8 @@ namespace MuseumAPI.Controllers
             if (query.Length < 3)
                 return NotFound();
 
-            return await _context.Artists.Where(t => t.FirstName != null && t.FirstName.ToLower().Contains(query.ToLower()))
+            return await _context.Artists
+                .Where(t => (t.FirstName != null  && t.FirstName.ToLower().Contains(query.ToLower())) || (t.LastName != null && t.LastName.ToLower().Contains(query.ToLower())))
                 .Select(x => ArtistToDTO(x))
                 .Take(10)
                 .ToListAsync();
@@ -469,18 +486,6 @@ namespace MuseumAPI.Controllers
                 .ToListAsync();
 
             return paintingsCount;
-        }
-
-        [HttpGet("total-number-pages")]
-        public async Task<int> GetTotalNumberOfPages(int pageSize = 10)
-        {
-            int totalAuthors = await _context.Artists.CountAsync();
-            int totalPages = totalAuthors / pageSize;
-            if (totalAuthors % pageSize > 0)
-            {
-                totalPages++;
-            }
-            return totalPages;
         }
 
         private bool ArtistExists(long id)

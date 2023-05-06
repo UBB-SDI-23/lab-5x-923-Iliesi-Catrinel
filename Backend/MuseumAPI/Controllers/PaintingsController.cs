@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -24,6 +25,18 @@ namespace MuseumAPI.Controllers
             _validator = new Validate();
         }
 
+        // GET: api/Paintings/count/10
+        [HttpGet("count/{pageSize}")]
+        public async Task<int> GetTotalNumberOfPages(int pageSize = 10)
+        {
+            int total = await _context.Paintings.CountAsync();
+            int totalPages = total / pageSize;
+            if (total % pageSize > 0)
+                totalPages++;
+
+            return totalPages;
+        }
+
         // GET: api/Paintings
         [HttpGet]
         public async Task<ActionResult<IEnumerable<PaintingDTO>>> GetPaintings()
@@ -38,15 +51,16 @@ namespace MuseumAPI.Controllers
 
         // GET: api/Paintings?page=0&pageSize=10
         [HttpGet("{page}/{pageSize}")]
-        public async Task<ActionResult<IEnumerable<PaintingDTO>>> GetPaintingPagination(int page = 0, int pageSize = 10)
+        public async Task<ActionResult<IEnumerable<Painting>>> GetPaintingPagination(int page = 0, int pageSize = 10)
         {
             if (_context.Paintings == null)
                 return NotFound();
 
             return await _context.Paintings
+                .Include(p => p.Artist)
+                .Include(x => x.User)
                 .Skip(page * pageSize)
                 .Take(pageSize)
-                .Select(x => PaintingToDTO(x))
                 .ToListAsync();
         }
 
@@ -72,7 +86,7 @@ namespace MuseumAPI.Controllers
             return painting;
         }
 
-        [HttpGet("autocomplete")]
+        [HttpGet("search")]
         public async Task<ActionResult<IEnumerable<PaintingDTO>>> AutocompleteTitle(string query)
         {
 
@@ -84,22 +98,6 @@ namespace MuseumAPI.Controllers
 
             return await _context.Paintings.Where(t => t.Title != null && t.Title.ToLower().Contains(query.ToLower()))
                 .Select(x => PaintingToDTO(x))
-                .Take(10)
-                .ToListAsync();
-        }
-
-        [HttpGet("autocomplete-artist")]
-        public async Task<ActionResult<IEnumerable<ArtistDTO>>> AutocompletePaintingArtist(string query)
-        {
-
-            if (_context.Artists == null)
-                return NotFound();
-
-            if (query.Length < 3)
-                return NotFound();
-
-            return await _context.Artists.Where(t => t.FirstName != null && t.FirstName.ToLower().Contains(query.ToLower()))
-                .Select(x => ArtistToDTO(x))
                 .Take(10)
                 .ToListAsync();
         }
@@ -258,20 +256,6 @@ namespace MuseumAPI.Controllers
                 Description = painting.Description,
 
                 ArtistId = painting.ArtistId,
-            };
-        }
-
-        private static ArtistDTO ArtistToDTO(Artist artist)
-        {
-            return new ArtistDTO
-            {
-                Id = artist.Id,
-                FirstName = artist.FirstName,
-                LastName = artist.LastName,
-                BirthDate = artist.BirthDate,
-                BirthPlace = artist.BirthPlace,
-                Education = artist.Education,
-                Movement = artist.Movement
             };
         }
     }

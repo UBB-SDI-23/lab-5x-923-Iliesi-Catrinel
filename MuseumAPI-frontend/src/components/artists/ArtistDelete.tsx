@@ -3,42 +3,51 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import axios, { AxiosError } from "axios";
 import { BACKEND_API_URL } from "../../constants";
-import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useContext } from "react";
+import { SnackbarContext } from "../SnackbarContext";
+import { getAuthToken } from "../../auth";
 
 
 export const ArtistDelete = () => {
 	const { artistId } = useParams();
 	const navigate = useNavigate();
-
-	const displayError = (message: string) => {
-		toast.error(message, {
-		  position: toast.POSITION.TOP_CENTER,
-		});
-	  };	  
-
-	const displaySuccess = (message: string) => {
-		toast.success(message, {
-		  position: toast.POSITION.TOP_CENTER,
-		});
-	};
+	const openSnackbar = useContext(SnackbarContext);
 
 	const handleDelete = async (event: { preventDefault: () => void }) => {
-		event.preventDefault();
-		await axios.delete(`${BACKEND_API_URL}/artists/${artistId}`).then(() => {
-            displaySuccess("Artist deleted successfully!");
-          })
-          .catch((reason: AxiosError) => {
-            displayError("Failed to delete artist!");
-            console.log(reason.message);
-          });;
-		// go to artists list
-		navigate("/artists");
-	};
+        event.preventDefault();
+        try {
+            await axios
+                .delete(`${BACKEND_API_URL}/artists/${artistId}`, {
+                    headers: {
+                        Authorization: `Bearer ${getAuthToken()}`,
+                    },
+                })
+                .then(() => {
+                    openSnackbar("success", "Artist deleted successfully!");
+                    navigate("/artists");
+                })
+                .catch((reason: AxiosError) => {
+                    console.log(reason.message);
+                    openSnackbar(
+                        "error",
+                        "Failed to delete artist!\n" +
+                            (String(reason.response?.data).length > 255
+                                ? reason.message
+                                : reason.response?.data)
+                    );
+                });
+        } catch (error) {
+            console.log(error);
+            openSnackbar(
+                "error",
+                "Failed to delete artist due to an unknown error!"
+            );
+        }
+    };
 
 	const handleCancel = (event: { preventDefault: () => void }) => {
 		event.preventDefault();
-		// go to artists list
 		navigate("/artists");
 	};
 
@@ -51,9 +60,14 @@ export const ArtistDelete = () => {
 					</IconButton>{" "}
 					Are you sure you want to delete this artist? This cannot be undone!
 				</CardContent>
-				<CardActions>
-					<Button type="submit" onClick={handleDelete} variant="contained">Delete</Button>
-					<Button onClick={handleCancel} variant="contained">Cancel</Button>
+				<CardActions sx={{
+                        mb: 1,
+                        mt: 1,
+                        display: "flex",
+                        justifyContent: "center",
+                    }}>
+					<Button type="submit" onClick={handleDelete} variant="contained" color="error" sx={{ mr: 2 }}>Delete</Button>
+					<Button onClick={handleCancel} variant="contained" color="primary">Cancel</Button>
 				</CardActions>
 			</Card>
 		</Container>

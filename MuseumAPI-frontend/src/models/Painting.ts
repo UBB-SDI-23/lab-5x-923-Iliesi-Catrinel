@@ -1,4 +1,5 @@
 import { Artist } from './Artist';
+import { User } from './User';
 
 export interface Painting {
     id?: number;
@@ -10,6 +11,9 @@ export interface Painting {
     description?: string;
     artist?: Artist;
     artistId: number;
+
+    userId?: number;
+    user?: User;
 
     [key: string]: any;
 }

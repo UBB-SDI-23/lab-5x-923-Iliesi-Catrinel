@@ -7,35 +7,29 @@ import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import AddIcon from "@mui/icons-material/Add";
 import { BACKEND_API_URL } from "../../constants";
 import { Painting } from "../../models/Painting";
+import { getAccount, getAuthToken } from "../../auth";
+import axios from "axios";
 
 export const AllPaintings = () => {
     const [loading, setLoading] = useState(false);
     const [paintings, setPaintings] = useState<Painting[]>([]);
+
 	const [sorting, setSorting] = useState({ key: 'column name', ascending: false });
 	const [pageIndex, setPageIndex] = useState(0);
-    const [pageSize, setPageSize] = useState(10);
-	const [hasMorePages, setHasMorePages] = useState(true);
+    const [pageSize, setPageSize] = useState(5);
+	const [totalPages, setTotalPages] = useState(999999);
 
 	function applySorting(key: string, ascending: boolean) {
 		setSorting({ key: key, ascending: ascending });
-	  }
+	}
 
-    useEffect(() => {
-        setLoading(true);
-        fetch(`${BACKEND_API_URL}/paintings/${pageIndex}/${pageSize}`)
-            .then(response => response.json())
-            .then(async data => {
-                for (let i = 0; i < data.length; i++) {
-                    const artistResponse = await fetch(`${BACKEND_API_URL}/artists/${data[i].artistId}`);
-                    const artistData = await artistResponse.json();
-                    data[i].artist = artistData;
-                }
-                setPaintings(data); 
-                setLoading(false); 
-                setHasMorePages(data.length >= pageSize);
-            });
-    }, [pageIndex]);
-    
+	useEffect(() => {
+        const account = getAccount();
+
+        if (account && account.userProfile) {
+            setPageSize(account.userProfile.pagePreference ?? 5);
+        }
+    }, []);
 
 	useEffect(() => {
         if (paintings.length === 0) {
@@ -54,12 +48,59 @@ export const AllPaintings = () => {
         );
     }, [sorting]);
 
-	function handleNextPage() {
-        setPageIndex((prevPageIndex) => prevPageIndex + 1);
+	useEffect(() => {
+        const fetchPageCount = async () => {
+            const response = await axios.get<number>(
+                `${BACKEND_API_URL}/paintings/count/${pageSize}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${getAuthToken()}`,
+                    },
+                }
+            );
+            const count = response.data;
+            setTotalPages(count);
+        };
+        fetchPageCount();
+    }, [pageSize]);
+
+	async function fetchPaintings(page: number): Promise<Painting[]> {
+        const response = await axios.get<Painting[]>(
+            `${BACKEND_API_URL}/paintings/${page}/${pageSize}`,
+            {
+                headers: {
+                    Authorization: `Bearer ${getAuthToken()}`,
+                },
+            }
+        );
+
+        return response.data;
     }
 
-    function handlePrevPage() {
-        setPageIndex((prevPageIndex) => Math.max(prevPageIndex - 1, 0));
+    function handlePageClick(pageNumber: number) {
+        setPageIndex(pageNumber - 1);
+    }
+
+    useEffect(() => {
+        setLoading(true);
+
+        fetchPaintings(pageIndex).then((data) => {
+            setPaintings(data);
+            setLoading(false);
+        });
+    }, [pageIndex, pageSize]);
+
+    const displayedPages = 9;
+
+    let startPage = pageIndex - Math.floor((displayedPages - 3) / 2) + 1;
+    let endPage = startPage + displayedPages - 3;
+
+    if (startPage <= 2) {
+        startPage = 1;
+        endPage = displayedPages - 1;
+    } else if (endPage >= totalPages - 1) {
+        startPage = totalPages - displayedPages + 2;
+        endPage = totalPages;
     }
 
     return (
@@ -83,12 +124,14 @@ export const AllPaintings = () => {
 								<TableCell>#</TableCell>
 								<TableCell align="left" style= {{cursor: "pointer", whiteSpace: "nowrap"}} onClick={() => applySorting('title', !sorting.ascending)}>
 									Title{sorting.key === "title" && (sorting.ascending ? ' ↑' : ' ↓')}</TableCell>
-                                <TableCell align="left">Creation year</TableCell>
-								<TableCell align="left">Height</TableCell>
-								<TableCell align="left">Subject</TableCell>
-								<TableCell align="left">Medium</TableCell>
-								<TableCell align="left">Description</TableCell>
-                                <TableCell align="left">Artist</TableCell>
+                                <TableCell align="left" style={{whiteSpace: "nowrap", userSelect: "none"}}>Creation year</TableCell>
+								<TableCell align="left" style={{whiteSpace: "nowrap", userSelect: "none"}}>Height</TableCell>
+								<TableCell align="left" style={{whiteSpace: "nowrap", userSelect: "none"}}>Subject</TableCell>
+								<TableCell align="left" style={{whiteSpace: "nowrap", userSelect: "none"}}>Medium</TableCell>
+								<TableCell align="left" style={{whiteSpace: "nowrap", userSelect: "none"}}>Description</TableCell>
+                                <TableCell align="left" style={{whiteSpace: "nowrap", userSelect: "none"}}>Artist</TableCell>
+								<TableCell align="left" style={{whiteSpace: "nowrap", userSelect: "none"}}>User</TableCell>
+								<TableCell align="center" style={{whiteSpace: "nowrap", userSelect: "none"}}>Operations</TableCell>
 							</TableRow>
 						</TableHead>
 						<TableBody>
@@ -109,7 +152,15 @@ export const AllPaintings = () => {
 									<TableCell align="left">{painting.description}</TableCell>
                                     <TableCell align="left">{painting.artist?.firstName + " " + painting.artist?.lastName}</TableCell>
 									<TableCell align="left">
-									<Box display="flex" justifyContent="center">
+                                        <Link
+                                            to={`/users/${painting.user?.id}/details`}
+                                            title="View user details"
+                                        >
+                                            {painting.user?.name}
+                                        </Link>
+                                    </TableCell>
+                                    <TableCell align="center">
+									<Box display="flex" justifyContent="center" alignItems="flex-start">
 										<IconButton
 											component={Link}
 											sx={{ mr: 3 }}
@@ -134,26 +185,94 @@ export const AllPaintings = () => {
 					</Table>
 				</TableContainer>
 			)}
-			{!loading && paintings.length > 0 && (
-                <div>
+			 {!loading && (
+                <div
+                    style={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        marginTop: 16,
+                        marginBottom: 16,
+                    }}
+                >
                     <Button
                         variant="contained"
-                        color="primary"
-                        onClick={handlePrevPage}
+                        onClick={() =>
+                            setPageIndex((prevPageIndex) =>
+                                Math.max(prevPageIndex - 1, 0)
+                            )
+                        }
                         disabled={pageIndex === 0}
-                        sx={{ mr: 2 , marginTop: 2, marginBottom: 2 }}
-                    >Previous Page
+                    >
+                        &lt;
                     </Button>
+                    {startPage > 1 && (
+                        <>
+                            <Button
+                                variant={
+                                    pageIndex === 0 ? "contained" : "outlined"
+                                }
+                                onClick={() => handlePageClick(1)}
+                                style={{
+                                    marginLeft: 8,
+                                    marginRight: 8,
+                                }}
+                            >
+                                1
+                            </Button>
+                            <span>...</span>
+                        </>
+                    )}
+                    {Array.from(
+                        { length: endPage - startPage + 1 },
+                        (_, i) => i + startPage
+                    ).map((number) => (
+                        <Button
+                            key={number}
+                            variant={
+                                pageIndex === number - 1
+                                    ? "contained"
+                                    : "outlined"
+                            }
+                            onClick={() => handlePageClick(number)}
+                            style={{
+                                marginLeft: 8,
+                                marginRight: 8,
+                            }}
+                        >
+                            {number}
+                        </Button>
+                    ))}
+                    {endPage < totalPages && (
+                        <>
+                            <span>...</span>
+                            <Button
+                                variant={
+                                    pageIndex === totalPages - 1
+                                        ? "contained"
+                                        : "outlined"
+                                }
+                                onClick={() => handlePageClick(totalPages)}
+                                style={{
+                                    marginLeft: 8,
+                                    marginRight: 8,
+                                }}
+                            >
+                                {totalPages}
+                            </Button>
+                        </>
+                    )}
                     <Button
                         variant="contained"
-                        color="primary"
-                        onClick={handleNextPage}
-						disabled={!hasMorePages}
-						sx={{ marginTop: 2, marginBottom: 2 }}
-                    >Next Page
+                        onClick={() =>
+                            setPageIndex((prevPageIndex) => prevPageIndex + 1)
+                        }
+                        disabled={pageIndex + 1 >= totalPages}
+                    >
+                        &gt;
                     </Button>
                 </div>
             )}
-		</Container>
-	);
-}
+        </Container>
+    );
+};
