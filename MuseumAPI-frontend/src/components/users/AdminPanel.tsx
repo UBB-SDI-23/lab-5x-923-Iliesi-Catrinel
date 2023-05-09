@@ -10,23 +10,26 @@ import {
 } from "@mui/material";
 import { Container } from "@mui/system";
 
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { BACKEND_API_URL } from "../../constants";
 import axios, { AxiosError } from "axios";
 import { SnackbarContext } from "../SnackbarContext";
-import { getAuthToken } from "../../auth";
+import { getAccount, getAuthToken, updatePref } from "../../auth";
 
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import { forEach } from "lodash";
 
 export const AdminPanel = () => {
     const openSnackbar = useContext(SnackbarContext);
 
-    const [artistsText, setArtistsText] = useState("");
-    const [paintingsText, setPaintingsText] = useState("");
-    const [museumsText, setMuseumsText] = useState("");
-    const [exhibitionsText, setExhibitionsText] = useState("");
+    const [preferenceText, setPreferenceText] = useState("");
+    const [artistsText, setArtistsText] = useState("1");
+    const [paintingsText, setPaintingsText] = useState("1");
+    const [museumsText, setMuseumsText] = useState("1");
+    const [exhibitionsText, setExhibitionsText] = useState("1");
 
+    const [loadingPreference, setLoadingPreference] = useState(false);
     const [loadingArtists, setLoadingArtists] = useState(false);
     const [loadingPaintings, setLoadingPaintings] = useState(false);
     const [loadingMuseums, setLoadingMuseums] = useState(false);
@@ -35,10 +38,17 @@ export const AdminPanel = () => {
     const anyLoading =
         loadingArtists || loadingPaintings || loadingMuseums || loadingExhibitions;
 
-    const deleteData = async (route: string) => {
+    useEffect(() => {
+            const account = getAccount();
+            setPreferenceText(
+                account?.userProfile?.pagePreference?.toString() ?? ""
+            );
+    }, []);
+    
+    const deleteData = async (route: string, count: number) => {
         try {
             await axios
-                .delete(`${BACKEND_API_URL}/users/${route}`, {
+                .delete(`${BACKEND_API_URL}/users/${route}/${count}`, {
                     headers: {
                         Authorization: `Bearer ${getAuthToken()}`,
                     },
@@ -101,6 +111,42 @@ export const AdminPanel = () => {
         }
     };
 
+    const savePreference = async (pref: number) => {
+        try {
+            await axios
+                .patch(
+                    `${BACKEND_API_URL}/users/pagepreferences/${pref}`,
+                    {},
+                    {
+                        headers: {
+                            Authorization: `Bearer ${getAuthToken()}`,
+                        },
+                    }
+                )
+                .then((response) => {
+                    const data = response.data;
+                    openSnackbar("success", data);
+                    updatePref(getAccount()?.id, pref);
+                })
+                .catch((reason: AxiosError) => {
+                    console.log(reason.message);
+                    openSnackbar(
+                        "error",
+                        "Failed to update preference!\n" +
+                            (String(reason.response?.data).length > 255
+                                ? reason.message
+                                : reason.response?.data)
+                    );
+                });
+        } catch (error) {
+            console.log(error);
+            openSnackbar(
+                "error",
+                "Failed to update preference due to an unknown error!"
+            );
+        }
+    };
+
     async function executeOperation(
         type: string,
         operation: string,
@@ -109,10 +155,12 @@ export const AdminPanel = () => {
     ) {
         setLoading(true);
         try {
-            if (operation === "insert") {
+            if (operation === "preference") {
+                await savePreference(count);
+            } else if (operation === "insert") {
                 await seedData(type, count);
             } else {
-                await deleteData(type);
+                await deleteData(type, count);
             }
         } finally {
             setLoading(false);
@@ -213,6 +261,59 @@ export const AdminPanel = () => {
                                     userSelect: "none",
                                 }}
                             >
+                                {`Page Preference: `}
+                            </p>
+                            <TextField
+                                value={preferenceText}
+                                type="text"
+                                inputProps={{
+                                    min: 1,
+                                    style: { textAlign: "center" },
+                                }}
+                                onChange={(event) =>
+                                    setPreferenceText(event.target.value)
+                                }
+                                onKeyPress={handleInputKeyPress}
+                                variant="outlined"
+                                size="small"
+                                style={{
+                                    width: 100,
+                                    marginRight: 16,
+                                }}
+                            />
+                            <Button
+                                variant="contained"
+                                onClick={() =>
+                                    parseData(
+                                        "pagepreferences",
+                                        "preference",
+                                        setLoadingPreference,
+                                        preferenceText
+                                    )
+                                }
+                            >
+                                Save
+                            </Button>
+                            {loadingPreference && (
+                                <CircularProgress sx={{ ml: 4 }} />
+                            )}
+                        </div>
+
+                        <div
+                            style={{
+                                display: "flex",
+                                alignItems: "center",
+                                marginTop: 16,
+                                marginBottom: 16,
+                            }}
+                        >
+                            <p
+                                style={{
+                                    marginLeft: 16,
+                                    marginRight: 8,
+                                    userSelect: "none",
+                                }}
+                            >
                                 {`Artists: `}
                             </p>
                             <TextField
@@ -258,7 +359,8 @@ export const AdminPanel = () => {
                                     parseData(
                                         "artists",
                                         "delete",
-                                        setLoadingArtists
+                                        setLoadingArtists,
+                                        artistsText
                                     )
                                 }
                             >
@@ -329,7 +431,8 @@ export const AdminPanel = () => {
                                     parseData(
                                         "paintings",
                                         "delete",
-                                        setLoadingPaintings
+                                        setLoadingPaintings,
+                                        paintingsText
                                     )
                                 }
                             >
@@ -400,7 +503,8 @@ export const AdminPanel = () => {
                                     parseData(
                                         "museums",
                                         "delete",
-                                        setLoadingMuseums
+                                        setLoadingMuseums,
+                                        museumsText
                                     )
                                 }
                             >
@@ -471,7 +575,8 @@ export const AdminPanel = () => {
                                     parseData(
                                         "exhibitions",
                                         "delete",
-                                        setLoadingExhibitions
+                                        setLoadingExhibitions,
+                                        exhibitionsText
                                     )
                                 }
                             >

@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.Data.SqlClient;
 using MuseumAPI.Attributes;
 using MuseumAPI.Context;
 using MuseumAPI.Models;
@@ -248,6 +249,26 @@ namespace MuseumAPI.Controllers
         }
 
         // PATCH: api/Users/0/PagePreference/5
+        [HttpPatch("PagePreferences/{pref}")]
+        [Role(AccessLevel.Admin)]
+        public async Task<ActionResult<UserDTO>> PatchPreferences(long pref)
+        {
+            if (_context.UserProfiles == null)
+                return NotFound();
+
+            if (pref < 0 || pref > 100)
+                return BadRequest("Preference must be between 0 and 100.");
+
+            long count = await _context.UserProfiles
+                .CountAsync();
+
+            var parameter = new SqlParameter("@PagePreference", pref);
+            await _context.Database.ExecuteSqlRawAsync("UPDATE [UserProfiles] SET [PagePreference] = @PagePreference", parameter);
+
+            return Ok($"Updated {count} users with the new preference.");
+        }
+
+        // PATCH: api/Users/0/AccessLevel/5
         [HttpPatch("{id}/AccessLevel/{accessLevel}")]
         [Role(AccessLevel.Admin)]
         public async Task<ActionResult<UserDTO>> PatchAccessLevel(long id, AccessLevel accessLevel)
@@ -426,50 +447,47 @@ namespace MuseumAPI.Controllers
         }
 
         // DELETE: api/Users/Artists
-        [HttpDelete("Artists")]
+        [HttpDelete("Artists/{count}")]
         [Role(AccessLevel.Admin)]
-        public async Task<IActionResult> DeleteArtists()
+        public async Task<IActionResult> DeleteArtists(int count)
         {
-            long count = await _context.Artists
-                .CountAsync();
+            // add count as sql parameter
+            var parameter = new SqlParameter("@Count", count);
 
-            await _context.Database.ExecuteSqlRawAsync("DELETE FROM [Artists]");
+            await _context.Database.ExecuteSqlRawAsync("DELETE TOP(@Count) FROM [Artists]", parameter);
             return Ok($"Deleted {count} artists.");
         }
 
         // DELETE: api/Users/Paintings
-        [HttpDelete("Paintings")]
+        [HttpDelete("Paintings/{count}")]
         [Role(AccessLevel.Admin)]
-        public async Task<IActionResult> DeletePaintings()
+        public async Task<IActionResult> DeletePaintings(int count)
         {
-            long count = await _context.Paintings
-                .CountAsync();
+            var parameter = new SqlParameter("@Count", count);
 
-            await _context.Database.ExecuteSqlRawAsync("DELETE FROM [Paintings]");
+            await _context.Database.ExecuteSqlRawAsync("DELETE TOP(@Count) FROM [Paintings]", parameter);
             return Ok($"Deleted {count} paintings.");
         }
 
         // DELETE: api/Users/Museums
-        [HttpDelete("Museums")]
+        [HttpDelete("Museums/{count}")]
         [Role(AccessLevel.Admin)]
-        public async Task<IActionResult> DeleteStores()
+        public async Task<IActionResult> DeleteStores(int count)
         {
-            long count = await _context.Museums
-                .CountAsync();
+            var parameter = new SqlParameter("@Count", count);
 
-            await _context.Database.ExecuteSqlRawAsync("DELETE FROM [Museums]");
+            await _context.Database.ExecuteSqlRawAsync("DELETE TOP(@Count) FROM [Museums]", parameter);
             return Ok($"Deleted {count} museums.");
         }
 
         // DELETE: api/Users/Exhibitions
-        [HttpDelete("Exhibitions")]
+        [HttpDelete("Exhibitions/{count}")]
         [Role(AccessLevel.Admin)]
-        public async Task<IActionResult> DeleteExhibitions()
+        public async Task<IActionResult> DeleteExhibitions(int count)
         {
-            long count = await _context.Exhibitions
-                .CountAsync();
+            var parameter = new SqlParameter("@Count", count);
 
-            await _context.Database.ExecuteSqlRawAsync("DELETE FROM [Exhibitions]");
+            await _context.Database.ExecuteSqlRawAsync("DELETE TOP(@Count) FROM [Exhibitions]", parameter);
             return Ok($"Deleted {count} exhibitions.");
         }
 

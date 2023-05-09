@@ -68,7 +68,16 @@ namespace PaintingsAPI
 
             // add the database context to the DI container
             // and specify that the database context will use a sql server database
-            builder.Services.AddDbContext<MuseumContext>(options => options.UseSqlServer(connectionString));
+            //builder.Services.AddDbContext<MuseumContext>(options => options.UseSqlServer(connectionString));
+
+            builder.Services.AddDbContext<MuseumContext>(options =>
+            {
+                options.UseSqlServer(connectionString, sqlOptions =>
+                {
+                    sqlOptions.CommandTimeout(120); // Set the command timeout to 60 seconds
+                });
+            });
+
 
             // add endpoints
             builder.Services.AddEndpointsApiExplorer();
