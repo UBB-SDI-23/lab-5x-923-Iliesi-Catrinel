@@ -10,19 +10,20 @@ import {
     MenuItem,
     FormControl,
     InputLabel,
-    Autocomplete,
 } from "@mui/material";
 import { Container } from "@mui/system";
-import { useEffect, useState, useCallback } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
-import { BACKEND_API_URL, getEnumValues } from "../../constants";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+
+import { useState, useContext, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { BACKEND_API_URL, formatDate, getEnumValues } from "../../constants";
 import axios, { AxiosError } from "axios";
-import { UserRegisterDTO } from "../../models/UserRegisterDTO";
-import { debounce } from "lodash";
-import { useContext } from "react";
 import { SnackbarContext } from "../SnackbarContext";
-import { MaritalStatus, Gender } from "../../models/UserProfile";
+import { getAuthToken, logOut } from "../../auth";
+import { UserRegisterDTO } from "../../models/UserRegisterDTO";
+import { Gender } from "../../models/UserProfile";
+import { MaritalStatus } from "../../models/UserProfile";
+
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
 export const UserRegister = () => {
     const navigate = useNavigate();
@@ -40,24 +41,45 @@ export const UserRegister = () => {
         maritalStatus: 0,
     });
 
-    const addRole = async (event: { preventDefault: () => void }) => {
+    useEffect(() => {
+        logOut();
+    }, []);
+
+    const userRegister = async (event: { preventDefault: () => void }) => {
         event.preventDefault();
         try {
             await axios
-                .post(`${BACKEND_API_URL}/users/register`, user)
+                .post(`${BACKEND_API_URL}/users/register`, user, {
+                    headers: {
+                        Authorization: `Bearer ${getAuthToken()}`,
+                    },
+                })
                 .then((response) => {
                     console.log(response);
+                    const token = response.data.token;
+
+                    const expirationDateTime = new Date(
+                        response.data.expiration
+                    );
+                    const expirationInMinutes = Math.floor(
+                        (expirationDateTime.getTime() -
+                            new Date().getTime() +
+                            1000 * 59) /
+                            (1000 * 60)
+                    );
 
                     openSnackbar(
                         "success",
                         "Registered successfully!" +
                             "\n" +
                             "Please confirm your account using this code: " +
-                            response.data.token +
+                            token +
                             "\n" +
-                            "This code will expire in 10 minutes."
+                            `This code will expire in ${expirationInMinutes} minutes at ${formatDate(
+                                expirationDateTime
+                            )}.`
                     );
-                    navigate(`/users/register/confirm/${response.data.token}`);
+                    navigate(`/users/register/confirm/${token}`);
                 })
                 .catch((reason: AxiosError) => {
                     console.log(reason.message);
@@ -84,10 +106,9 @@ export const UserRegister = () => {
                 <CardContent>
                     <Box display="flex" alignItems="flex-start" sx={{ mb: 4 }}>
                         <IconButton
-                            disabled
                             component={Link}
                             sx={{ mb: 2, mr: 3 }}
-                            to={``}
+                            to={`/`}
                         >
                             <ArrowBackIcon />
                         </IconButton>
@@ -102,7 +123,8 @@ export const UserRegister = () => {
                             Register
                         </h1>
                     </Box>
-                    <form id="registerForm" onSubmit={addRole}>
+
+                    <form>
                         <TextField
                             id="name"
                             label="Name"
@@ -237,11 +259,7 @@ export const UserRegister = () => {
                     </form>
                 </CardContent>
                 <CardActions sx={{ mb: 1, ml: 1, mt: 1 }}>
-                    <Button
-                        variant="contained"
-                        type="submit"
-                        form="registerForm"
-                    >
+                    <Button onClick={userRegister} variant="contained">
                         Register
                     </Button>
                 </CardActions>

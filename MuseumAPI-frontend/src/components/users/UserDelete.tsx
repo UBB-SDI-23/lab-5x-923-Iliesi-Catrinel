@@ -7,33 +7,39 @@ import {
     Button,
     Box,
 } from "@mui/material";
-import { Link, useNavigate, useParams } from "react-router-dom";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import axios, { AxiosError } from "axios";
-import { BACKEND_API_URL } from "../../constants";
-import { useContext } from "react";
-import { SnackbarContext } from "../SnackbarContext";
 
-export const UserRegisterConfirm = () => {
+import { useContext } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { BACKEND_API_URL } from "../../constants";
+import axios, { AxiosError } from "axios";
+import { SnackbarContext } from "../SnackbarContext";
+import { getAuthToken } from "../../auth";
+
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+
+export const UserDelete = () => {
     const navigate = useNavigate();
     const openSnackbar = useContext(SnackbarContext);
+    const { userId } = useParams();
 
-    const { code } = useParams();
-
-    const handleConfirm = async (event: { preventDefault: () => void }) => {
+    const handleDelete = async (event: { preventDefault: () => void }) => {
         event.preventDefault();
         try {
             await axios
-                .post(`${BACKEND_API_URL}/users/register/confirm/${code}`)
+                .delete(`${BACKEND_API_URL}/users/${userId}`, {
+                    headers: {
+                        Authorization: `Bearer ${getAuthToken()}`,
+                    },
+                })
                 .then(() => {
-                    openSnackbar("success", "Account confirmed successfully!");
-                    navigate("/users/login");
+                    openSnackbar("success", "User deleted successfully!");
+                    navigate("/users");
                 })
                 .catch((reason: AxiosError) => {
                     console.log(reason.message);
                     openSnackbar(
                         "error",
-                        "Failed to confirm account!\n" +
+                        "Failed to delete user!\n" +
                             (String(reason.response?.data).length > 255
                                 ? reason.message
                                 : reason.response?.data)
@@ -43,14 +49,14 @@ export const UserRegisterConfirm = () => {
             console.log(error);
             openSnackbar(
                 "error",
-                "Failed to confirm account due to an unknown error!"
+                "Failed to delete user due to an unknown error!"
             );
         }
     };
 
     const handleCancel = (event: { preventDefault: () => void }) => {
         event.preventDefault();
-        navigate("/");
+        navigate("/users");
     };
 
     return (
@@ -61,7 +67,7 @@ export const UserRegisterConfirm = () => {
                         <IconButton
                             component={Link}
                             sx={{ mr: 3 }}
-                            to={`/users/register`}
+                            to={`/users`}
                         >
                             <ArrowBackIcon />
                         </IconButton>
@@ -73,15 +79,13 @@ export const UserRegisterConfirm = () => {
                                 marginLeft: -64,
                             }}
                         >
-                            Confirm Account
+                            Delete User
                         </h1>
                     </Box>
 
                     <p style={{ marginBottom: 0, textAlign: "center" }}>
-                        Would you like to confirm your account?
-                        <br />
-                        <br />
-                        Code: {code}
+                        Are you sure you want to delete this user? This cannot
+                        be undone!
                     </p>
                 </CardContent>
                 <CardActions
@@ -94,19 +98,19 @@ export const UserRegisterConfirm = () => {
                 >
                     <Button
                         variant="contained"
-                        color="primary"
+                        color="error"
                         sx={{ width: 100, mr: 2 }}
-                        onClick={handleConfirm}
+                        onClick={handleDelete}
                     >
                         Yes
                     </Button>
                     <Button
                         variant="contained"
-                        color="error"
+                        color="primary"
                         sx={{ width: 100 }}
                         onClick={handleCancel}
                     >
-                        No
+                        Cancel
                     </Button>
                 </CardActions>
             </Card>

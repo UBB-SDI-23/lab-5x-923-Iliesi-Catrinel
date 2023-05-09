@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import { Box, Button, CircularProgress, Container, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip } from "@mui/material";
 import { Link } from "react-router-dom";
 import AddIcon from "@mui/icons-material/Add";
@@ -7,66 +7,18 @@ import ReadMoreIcon from "@mui/icons-material/ReadMore";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import { BACKEND_API_URL, formatDate } from "../../constants";
-import { getAccount, getAuthToken } from "../../auth";
-import axios from "axios";
+import { getAccount, getAuthToken, isAuthorized } from "../../auth";
+import axios, { AxiosError } from "axios";
+import { SnackbarContext } from "../SnackbarContext";
 
 export const AllExhibitions = () => {
-    const [loading, setLoading] = useState(false);
+    const openSnackbar = useContext(SnackbarContext);
+    const [loading, setLoading] = useState(true);
     const [exhibitions, setExhibitions] = useState<Exhibition[]>([]);
 
     const [pageIndex, setPageIndex] = useState(0);
-    const [pageSize, setPageSize] = useState(5);
+    const [pageSize] = useState(getAccount()?.userProfile?.pagePreference ?? 5);
     const [totalPages, setTotalPages] = useState(9999999);
-
-    useEffect(() => {
-        const account = getAccount();
-
-        if (account && account.userProfile) {
-            setPageSize(account.userProfile.pagePreference ?? 5);
-        }
-    }, []);
-
-    async function fetchExhibitions(page: number): Promise<Exhibition[]> {
-        const response = await axios.get<Exhibition[]>(
-            `${BACKEND_API_URL}/exhibitions/page/${page}/${pageSize}`,
-            {
-                headers: {
-                    Authorization: `Bearer ${getAuthToken()}`,
-                },
-            }
-        );
-
-        return response.data;
-    }
-
-    useEffect(() => {
-        const fetchPageCount = async () => {
-            const response = await axios.get<number>(
-                `${BACKEND_API_URL}/exhibitions/count/${pageSize}`,
-                {
-                    headers: {
-                        Authorization: `Bearer ${getAuthToken()}`,
-                    },
-                }
-            );
-            const count = response.data;
-            setTotalPages(count);
-        };
-        fetchPageCount();
-    }, [pageSize]);
-
-    useEffect(() => {
-        setLoading(true);
-
-        fetchExhibitions(pageIndex).then((data) => {
-            setExhibitions(data);
-            setLoading(false);
-        });
-    }, [pageIndex, pageSize]);
-
-    function handlePageClick(pageNumber: number) {
-        setPageIndex(pageNumber - 1);
-    }
 
     const displayedPages = 9;
 
@@ -81,12 +33,94 @@ export const AllExhibitions = () => {
         endPage = totalPages;
     }
 
+    function handlePageClick(pageNumber: number) {
+        setPageIndex(pageNumber - 1);
+    }
+    
+    const fetchPageCount = async () => {
+        try {
+            await axios
+                .get<number>(
+                    `${BACKEND_API_URL}/exhibitions/count/${pageSize}`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${getAuthToken()}`,
+                        },
+                    }
+                )
+                .then((response) => {
+                    const data = response.data;
+                    setTotalPages(data);
+                })
+                .catch((reason: AxiosError) => {
+                    console.log(reason.message);
+                    openSnackbar(
+                        "error",
+                        "Failed to fetch page count!\n" +
+                            (String(reason.response?.data).length > 255
+                                ? reason.message
+                                : reason.response?.data)
+                    );
+                });
+        } catch (error) {
+            console.log(error);
+            openSnackbar(
+                "error",
+                "Failed to fetch page count due to an unknown error!"
+            );
+        }
+    };
+
+    useEffect(() => {
+        fetchPageCount();
+    }, [pageSize]);
+
+    const fetchExhibitions = async () => {
+        setLoading(true);
+        try {
+            await axios
+                .get<Exhibition[]>(
+                    `${BACKEND_API_URL}/exhibitions/page/${pageIndex}/${pageSize}`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${getAuthToken()}`,
+                        },
+                    }
+                )
+                .then((response) => {
+                    const data = response.data;
+                    setExhibitions(data);
+                    setLoading(false);
+                })
+                .catch((reason: AxiosError) => {
+                    console.log(reason.message);
+                    openSnackbar(
+                        "error",
+                        "Failed to fetch exhibitions!\n" +
+                            (String(reason.response?.data).length > 255
+                                ? reason.message
+                                : reason.response?.data)
+                    );
+                });
+        } catch (error) {
+            console.log(error);
+            openSnackbar(
+                "error",
+                "Failed to fetch exhibitions due to an unknown error!"
+            );
+        }
+    };
+
+    useEffect(() => {
+        fetchExhibitions();
+    }, [pageIndex, pageSize]);
+
     return (
         <Container>
             <h1>All exhibitions</h1>
 
             {loading && <CircularProgress />}
-            {!loading && exhibitions.length === 0 && <p>No exhibitions found!</p>}
+            {!loading && exhibitions.length === 0 && <p style={{ marginLeft: 16 }}>No exhibitions found!</p>}
             {!loading && (
                 <IconButton component={Link} sx={{ mr: 3 }} to={`/exhibitions/add`}>
                     <Tooltip title="Add a new exhibition" arrow>
@@ -140,12 +174,37 @@ export const AllExhibitions = () => {
                                                         </Tooltip>
                                                     </IconButton>
 
-                                                    <IconButton component={Link} sx={{ mr: 3 }} to={`/exhibitions/${exhibition.id}/edit`}>
+                                                    <IconButton component={Link} sx={{ ml: 1, mr: 1 }}
+                                                        to={`/exhibitions/${exhibition.id}/edit`}
+                                                        disabled={
+                                                            !isAuthorized(
+                                                                exhibition.user?.id
+                                                            )
+                                                        }>
+                                                        <Tooltip
+                                                            title="Edit exhibition"
+                                                            arrow
+                                                        >
                                                         <EditIcon />
+                                                        </Tooltip>
                                                     </IconButton>
 
-                                                    <IconButton component={Link} sx={{ mr: 3 }} to={`/exhibitions/${exhibition.id}/delete`}>
-                                                        <DeleteForeverIcon sx={{ color: "red" }} />
+                                                    <IconButton component={Link}  
+                                                        to={`/exhibitions/${exhibition.id}/delete`}
+                                                        disabled={
+                                                            !isAuthorized(
+                                                                exhibition.user?.id
+                                                            )
+                                                        }
+                                                        sx={{
+                                                            color: "red",
+                                                        }}>
+                                                        <Tooltip
+                                                            title="Delete shift"
+                                                            arrow
+                                                        >
+                                                        <DeleteForeverIcon/>
+                                                        </Tooltip>
                                                     </IconButton>
                                                 </Box>
                                             </TableCell>
@@ -162,7 +221,6 @@ export const AllExhibitions = () => {
                         justifyContent: "center",
                         alignItems: "center",
                         marginTop: 16,
-                        marginBottom: 16,
                     }}
                 >
                     <Button

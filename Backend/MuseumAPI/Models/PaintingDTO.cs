@@ -10,6 +10,6 @@
         public string? Medium { get; set; }
         public string? Description { get; set; }
 
-        public long ArtistId { get; set; }
+        public long? ArtistId { get; set; }
     }
 }

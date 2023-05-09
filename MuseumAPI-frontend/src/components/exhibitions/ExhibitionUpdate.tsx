@@ -32,7 +32,7 @@ export const ExhibitionUpdate = () => {
     const [museumName, setMuseumName] = useState("");
     const [artistName, setArtistName] = useState("");
 
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [exhibition, setExhibition] = useState<Exhibition>({
 		artistId: 0,
         museumId: 0,

@@ -7,20 +7,27 @@ import {
     Button,
     Box,
 } from "@mui/material";
+
+import { useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { SnackbarContext } from "../SnackbarContext";
+
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
-export const ExhibitionAdd = () => {
+export const UserAdd = () => {
     const navigate = useNavigate();
+    const openSnackbar = useContext(SnackbarContext);
 
     const handleGoButton = async (event: { preventDefault: () => void }) => {
         event.preventDefault();
-        navigate("/exhibitions");
+        openSnackbar("info", "Navigating to users...");
+        navigate("/users");
     };
 
     const handleBackButton = (event: { preventDefault: () => void }) => {
         event.preventDefault();
-        navigate("/exhibitions");
+        openSnackbar("info", "Navigating to users...");
+        navigate("/users");
     };
 
     return (
@@ -31,7 +38,7 @@ export const ExhibitionAdd = () => {
                         <IconButton
                             component={Link}
                             sx={{ mr: 3 }}
-                            to={`/exhibitions`}
+                            to={`/users`}
                         >
                             <ArrowBackIcon />
                         </IconButton>
@@ -43,7 +50,7 @@ export const ExhibitionAdd = () => {
                                 marginLeft: -64,
                             }}
                         >
-                            Add Exhibition
+                            Add User
                         </h1>
                     </Box>
 
@@ -61,7 +68,7 @@ export const ExhibitionAdd = () => {
                 >
                     <Button
                         variant="contained"
-                        color="primary"
+                        color="error"
                         sx={{ width: 100, mr: 2 }}
                         onClick={handleGoButton}
                     >

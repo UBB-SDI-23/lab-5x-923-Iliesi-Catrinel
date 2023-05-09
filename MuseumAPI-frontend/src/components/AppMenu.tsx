@@ -1,24 +1,49 @@
 import { AppBar, Box, Button, IconButton, Toolbar, Typography } from "@mui/material";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import BrushIcon from '@mui/icons-material/Brush';
 import MuseumIcon from '@mui/icons-material/Museum';
 import HomeIcon from '@mui/icons-material/Home';
-import AssignmentIcon from '@mui/icons-material/Assignment';
-import KeyIcon from '@mui/icons-material/Key';
 import PersonSearchIcon from "@mui/icons-material/PersonSearch";
 import ColorLensIcon from '@mui/icons-material/ColorLens';
 import ArtTrackIcon from '@mui/icons-material/ArtTrack';
 import HeightIcon from '@mui/icons-material/Height';
 import TodayIcon from '@mui/icons-material/Today';
-import { getAccount } from "../auth";
+import { getAccount, logOut } from "../auth";
+import { SnackbarContext } from "./SnackbarContext";
+import { useContext } from "react";
+import LogoutIcon from "@mui/icons-material/Logout";
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
+import { AccessLevel } from "../models/User";
 
 
 export const AppMenu = () => {
+	const navigate = useNavigate();
+    const openSnackbar = useContext(SnackbarContext);
+
     const location = useLocation();
 	const path = location.pathname;
 
+	const accountNameClick = (event: { preventDefault: () => void }) => {
+        event.preventDefault();
+
+        const account = getAccount();
+        if (account !== null) {
+            navigate(`/users/${account.id}/details`);
+        } else {
+            navigate("/users/login");
+        }
+    };
+
+    const logOutClick = (event: { preventDefault: () => void }) => {
+        event.preventDefault();
+
+        logOut();
+        navigate("/");
+        openSnackbar("info", "Logged out successfully!");
+    };
+
 	return (
-		<Box sx={{ flexGrow: 1, position: "sticky", top: "0" }}>
+		<Box sx={{ flexGrow: 1, position: "sticky", top: "0", zIndex: "9" }}>
 			<AppBar position="static" sx={{ marginBottom: "20px"}}>
 				<Toolbar sx={{ display: "flex", flexWrap: "nowrap" }}>
 					<IconButton
@@ -41,8 +66,7 @@ export const AppMenu = () => {
 						component={Link}
 						color="inherit"
 						sx={{ mr: 4 }}
-						startIcon={<PersonSearchIcon />}
-						disabled={getAccount() === null}>
+						startIcon={<PersonSearchIcon />}>
 						Artists
 					</Button>
 					
@@ -52,8 +76,7 @@ export const AppMenu = () => {
 						component={Link}
 						color="inherit"
 						sx={{ mr: 4 }}
-						startIcon={<BrushIcon />}
-						disabled={getAccount() === null}>
+						startIcon={<BrushIcon />}>
 						Paintings
 					</Button>
 
@@ -62,10 +85,9 @@ export const AppMenu = () => {
 						to="/filterpaintings"
 						component={Link}
 						color="inherit"
-						sx={{ mr: 4, whiteSpace: "nowrap" }}
-						startIcon={<ColorLensIcon />}
-						disabled={getAccount() === null}>
-						Filter Paintings
+						sx={{ mr: 4}}
+						startIcon={<ColorLensIcon />}>
+						Filter
 					</Button>
 
 					<Button
@@ -74,8 +96,7 @@ export const AppMenu = () => {
 						component={Link}
 						color="inherit"
 						sx={{ mr: 4 }}
-						startIcon={<MuseumIcon />}
-						disabled={getAccount() === null}>
+						startIcon={<MuseumIcon />}>
 						Museums
 					</Button>
 
@@ -85,8 +106,7 @@ export const AppMenu = () => {
 						component={Link}
 						color="inherit"
 						sx={{ mr: 4 }}
-						startIcon={<ArtTrackIcon />}
-						disabled={getAccount() === null}>
+						startIcon={<ArtTrackIcon />}>
 						Exhibitions
 					</Button>
 
@@ -96,8 +116,7 @@ export const AppMenu = () => {
 						component={Link}
 						color="inherit"
 						sx={{ mr: 4, whiteSpace: "nowrap" }}
-						startIcon={<TodayIcon />}
-						disabled={getAccount() === null}>
+						startIcon={<TodayIcon />}>
 						Age Report
 					</Button>
 
@@ -107,44 +126,66 @@ export const AppMenu = () => {
 						component={Link}
 						color="inherit"
 						sx={{ mr: 4, whiteSpace: "nowrap" }}
-						startIcon={<HeightIcon />}
-						disabled={getAccount() === null}>
+						startIcon={<HeightIcon />}>
 						Height Report
 					</Button>
 					
+					<Box sx={{ flexGrow: 1 }} />
+
+					<IconButton
+                        component={Link}
+                        to={`/users/adminpanel`}
+                        size="large"
+                        edge="start"
+                        color="inherit"
+                        aria-label="school"
+                        sx={{
+                            mr: 0,
+                            display:
+                                getAccount()?.accessLevel === AccessLevel.Admin
+                                    ? "inline-flex"
+                                    : "none",
+                        }}
+                    >
+                        <AdminPanelSettingsIcon />
+                    </IconButton>
+
                     <Button
                         variant="text"
-                        to={`/users/${getAccount()?.id}/details`}
-                        component={Link}
                         color="inherit"
                         sx={{ mr: 2 }}
-                        disabled={getAccount() === null}
+                        onClick={accountNameClick}
                     >
-                        {getAccount()?.name}
+                        {getAccount()?.name ?? "Log In"}
+                    </Button>
+
+                    <Button
+                        variant="text"
+                        to="/users/register"
+                        component={Link}
+                        color="inherit"
+                        sx={{
+                            mr: 0,
+                            display:
+                                getAccount() !== null ? "none" : "inline-flex",
+                        }}
+                    >
+                        Register
                     </Button>
 
                     <IconButton
-                        component={Link}
-                        to="/users/login"
                         size="large"
                         edge="start"
                         color="inherit"
                         aria-label="school"
-                        sx={{ mr: 2 }}
+                        sx={{
+                            mr: 0,
+                            display:
+                                getAccount() !== null ? "inline-flex" : "none",
+                        }}
+                        onClick={logOutClick}
                     >
-                        <KeyIcon />
-                    </IconButton>
-
-                    <IconButton
-                        component={Link}
-                        to="/users/register"
-                        size="large"
-                        edge="start"
-                        color="inherit"
-                        aria-label="school"
-                        sx={{ mr: 0 }}
-                    >
-                        <AssignmentIcon />
+                        <LogoutIcon />
                     </IconButton>
 					</Box>
 				</Toolbar>
