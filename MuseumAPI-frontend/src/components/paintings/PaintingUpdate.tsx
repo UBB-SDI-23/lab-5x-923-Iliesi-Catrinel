@@ -26,7 +26,7 @@ export const PaintingUpdate = () => {
     const navigate = useNavigate();
     const openSnackbar = useContext(SnackbarContext);
 
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [artists, setArtists] = useState<Artist[]>([]);
     const [painting, setPainting] = useState<Painting>({
         id: parseInt(String(paintingId)),

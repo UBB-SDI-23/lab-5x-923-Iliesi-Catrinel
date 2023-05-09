@@ -1,11 +1,13 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using MuseumAPI.Context;
 using MuseumAPI.Models;
 using MuseumAPI.Utils;
+using MuseumAPI.Services;
 using MuseumAPI.Validation;
 using System.Text;
 using System.Text.Json.Serialization;
@@ -23,6 +25,8 @@ namespace PaintingsAPI
             // builder.Services.AddControllers();
 
             //builder.Services.AddControllers().AddNewtonsoftJson(options => options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
+
+            builder.Services.AddHostedService<ExpiredConfirmationCodeCleanupService>();
 
             builder.Services.AddControllers(options =>
             {
@@ -86,8 +90,9 @@ namespace PaintingsAPI
             // seed database
             using (var scope = app.Services.CreateScope())
             {
-                var services = scope.ServiceProvider;
-                SeedData.Initialize(services);
+                var context = scope.ServiceProvider.GetService<MuseumContext>();
+                //context.Database.Migrate();
+                SeedData.InitializeAsync(scope.ServiceProvider).Wait();
             }
 
             app.UseSwagger();

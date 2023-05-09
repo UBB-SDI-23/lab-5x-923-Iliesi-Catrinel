@@ -16,7 +16,7 @@ export const MuseumUpdate = () => {
     const navigate = useNavigate();
     const openSnackbar = useContext(SnackbarContext);
 
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [museum, setMuseum] = useState<Museum>({
         id: parseInt(String(museumId)),
         name: "",

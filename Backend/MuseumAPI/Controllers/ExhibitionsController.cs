@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -28,6 +29,7 @@ namespace MuseumAPI.Controllers
 
         // GET: api/Exhibitions/count/10
         [HttpGet("count/{pageSize}")]
+        [AllowAnonymous]
         public async Task<int> GetTotalNumberOfPages(int pageSize = 10)
         {
             int total = await _context.Exhibitions.CountAsync();
@@ -52,6 +54,7 @@ namespace MuseumAPI.Controllers
 
         // GET: api/Exhibitions?page=0&pageSize=10
         [HttpGet("page/{page}/{pageSize}")]
+        [AllowAnonymous]
         public async Task<ActionResult<IEnumerable<Exhibition>>> GetExhibitionsPagination(int page = 0, int pageSize = 10)
         {
             if (_context.Exhibitions == null)
@@ -68,6 +71,7 @@ namespace MuseumAPI.Controllers
 
         // GET: api/Exhibitions/5/5
         [HttpGet("{aid}/{mid}")]
+        [AllowAnonymous]
         public async Task<ActionResult<Exhibition>> GetExhibition(long aid, long mid)
         {
             if (_context.Exhibitions == null)
@@ -76,6 +80,7 @@ namespace MuseumAPI.Controllers
             }
 
             var exhibition = await _context.Exhibitions
+                .Include(e => e.User)
                 .Include(e => e.Artist)
                 .Include(e => e.Museum)
                 .FirstOrDefaultAsync(p => p.MuseumId == mid && p.ArtistId == aid);
@@ -103,6 +108,13 @@ namespace MuseumAPI.Controllers
             {
                 return NotFound();
             }
+
+            var extracted = UsersController.ExtractJWTToken(User);
+            if (extracted == null)
+                return Unauthorized("Invalid token.");
+
+            if (extracted.Item2 == AccessLevel.Regular && exhibition.UserId != extracted.Item1)
+                return Unauthorized("You can only update your own entities.");
 
             String validationErrors = _validator.ValidateExhibition(exhibitionDTO);
 
@@ -157,6 +169,17 @@ namespace MuseumAPI.Controllers
                 return Problem("Entity set 'MuseumContext.Exhibitions'  is null.");
             }
 
+            var extracted = UsersController.ExtractJWTToken(User);
+            if (extracted == null)
+                return Unauthorized("Invalid token.");
+
+            String validationErrors = _validator.ValidateExhibition(exhibitionDTO);
+
+            if (validationErrors != String.Empty)
+            {
+                return BadRequest("ERROR:\n" + validationErrors);
+            }
+
             var museum = await _context.Museums.FindAsync(exhibitionDTO.MuseumId);
 
             if (museum == null)
@@ -171,13 +194,6 @@ namespace MuseumAPI.Controllers
                 return BadRequest();
             }
 
-            String validationErrors = _validator.ValidateExhibition(exhibitionDTO);
-
-            if (validationErrors != String.Empty)
-            {
-                return BadRequest("ERROR:\n" + validationErrors);
-            }
-
             var exhibition = new Exhibition
             {
                 ArtistId = exhibitionDTO.ArtistId,
@@ -187,7 +203,9 @@ namespace MuseumAPI.Controllers
                 Museum = museum,
 
                 StartDate = exhibitionDTO.StartDate,
-                EndDate = exhibitionDTO.EndDate
+                EndDate = exhibitionDTO.EndDate,
+
+                UserId = extracted.Item1
             };
 
             _context.Exhibitions.Add(exhibition);
@@ -200,7 +218,7 @@ namespace MuseumAPI.Controllers
                 return Conflict();
             }
 
-            return CreatedAtAction(nameof(GetExhibition), ExhibitionToDTO(exhibition));
+            return CreatedAtAction(nameof(GetExhibition), new { aid = artist.Id, mid = museum.Id }, ExhibitionToDTO(exhibition));
         }
 
         // DELETE: api/exhibitions/5/5
@@ -221,6 +239,13 @@ namespace MuseumAPI.Controllers
             {
                 return NotFound();
             }
+
+            var extracted = UsersController.ExtractJWTToken(User);
+            if (extracted == null)
+                return Unauthorized("Invalid token.");
+
+            if (extracted.Item2 == AccessLevel.Regular && exhibition.UserId != extracted.Item1)
+                return Unauthorized("You can only delete your own entities.");
 
             _context.Exhibitions.Remove(exhibition);
             await _context.SaveChangesAsync();

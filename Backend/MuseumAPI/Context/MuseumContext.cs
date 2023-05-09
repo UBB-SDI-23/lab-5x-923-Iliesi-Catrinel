@@ -19,14 +19,15 @@ namespace MuseumAPI.Context
         {
             base.OnModelCreating(modelBuilder);
 
-            // UserProfile has the primary key equal to the id of the User
-            modelBuilder.Entity<UserProfile>()
-                .HasKey(u => u.UserId);
-
             // Set PagePreference default value to 5
             modelBuilder.Entity<UserProfile>()
-                .Property(u => u.PagePreference)
+                .Property(p => p.PagePreference)
                 .HasDefaultValue(5);
+
+            // Set AccessLevel default value to Unconfirmed
+            modelBuilder.Entity<User>()
+                .Property(u => u.AccessLevel)
+                .HasDefaultValue(AccessLevel.Unconfirmed);
 
             // Define unique constraints
             modelBuilder.Entity<User>()
@@ -34,23 +35,22 @@ namespace MuseumAPI.Context
                 .IsUnique();
 
             modelBuilder.Entity<ConfirmationCode>()
-                .HasIndex(u => u.Code)
+                .HasIndex(c => c.Code)
                 .IsUnique();
 
             // Define one-to-one relationships
-            modelBuilder.Entity<User>()
-                .HasOne(u => u.UserProfile)
-                .WithOne(p => p.User)
+            modelBuilder.Entity<UserProfile>()
+                .HasOne(p => p.User)
+                .WithOne(u => u.UserProfile)
                 .HasForeignKey<UserProfile>(p => p.UserId)
-                .OnDelete(DeleteBehavior.ClientSetNull);
-            //.OnDelete(DeleteBehavior.ClientCascade);
+                .OnDelete(DeleteBehavior.Cascade);
 
             // Define one-to-many relationship
             modelBuilder.Entity<Painting>()
                 .HasOne(a => a.Artist)
                 .WithMany(p => p.Paintings)
                 .HasForeignKey(a => a.ArtistId)
-                .OnDelete(DeleteBehavior.ClientSetNull);
+                .OnDelete(DeleteBehavior.SetNull);
 
             // Define many-to-many relationship
             modelBuilder.Entity<Museum>()
@@ -60,11 +60,13 @@ namespace MuseumAPI.Context
                     j => j
                         .HasOne(pt => pt.Artist)
                         .WithMany(t => t.Exhibitions)
-                        .HasForeignKey(pt => pt.ArtistId),
+                        .HasForeignKey(pt => pt.ArtistId)
+                        .OnDelete(DeleteBehavior.Cascade),
                     j => j
                         .HasOne(pt => pt.Museum)
                         .WithMany(p => p.Exhibitions)
-                        .HasForeignKey(pt => pt.MuseumId),
+                        .HasForeignKey(pt => pt.MuseumId)
+                        .OnDelete(DeleteBehavior.Cascade),
                     j =>
                     {
                         j.Property(pt => pt.StartDate).HasDefaultValueSql("CURRENT_TIMESTAMP");
@@ -74,34 +76,34 @@ namespace MuseumAPI.Context
 
             // Assign users to entities
             modelBuilder.Entity<ConfirmationCode>()
-                .HasOne(u => u.User)
+                .HasOne(c => c.User)
                 .WithMany()
-                .HasForeignKey(u => u.UserId)
-                .OnDelete(DeleteBehavior.ClientSetNull);
+                .HasForeignKey(c => c.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<Artist>()
-                .HasOne(u => u.User)
+                .HasOne(r => r.User)
                 .WithMany()
-                .HasForeignKey(u => u.UserId)
-                .OnDelete(DeleteBehavior.ClientSetNull);
+                .HasForeignKey(r => r.UserId)
+                .OnDelete(DeleteBehavior.SetNull);
 
             modelBuilder.Entity<Painting>()
-                .HasOne(u => u.User)
+                .HasOne(e => e.User)
                 .WithMany()
-                .HasForeignKey(u => u.UserId)
-                .OnDelete(DeleteBehavior.ClientSetNull);
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.SetNull);
 
             modelBuilder.Entity<Museum>()
-                .HasOne(u => u.User)
+                .HasOne(s => s.User)
                 .WithMany()
-                .HasForeignKey(u => u.UserId)
-                .OnDelete(DeleteBehavior.ClientSetNull);
+                .HasForeignKey(s => s.UserId)
+                .OnDelete(DeleteBehavior.SetNull);
 
             modelBuilder.Entity<Exhibition>()
-                .HasOne(u => u.User)
+                .HasOne(ss => ss.User)
                 .WithMany()
-                .HasForeignKey(u => u.UserId)
-                .OnDelete(DeleteBehavior.ClientSetNull);
+                .HasForeignKey(ss => ss.UserId)
+                .OnDelete(DeleteBehavior.SetNull);
         }
 
         public virtual DbSet<ConfirmationCode> ConfirmationCodes { get; set; } = null!;

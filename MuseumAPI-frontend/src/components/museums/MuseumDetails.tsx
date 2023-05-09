@@ -1,6 +1,6 @@
 import { Box, Button, Card, CardActions, CardContent, IconButton } from "@mui/material";
 import { Container } from "@mui/system";
-import { Key, useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import { Link, useParams } from "react-router-dom";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { BACKEND_API_URL, formatDate } from "../../constants";
@@ -8,28 +8,54 @@ import EditIcon from "@mui/icons-material/Edit";
 import ArtTrackIcon from '@mui/icons-material/ArtTrack';
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import { Museum } from "../../models/Museum";
-import { getAuthToken } from "../../auth";
-import axios from "axios";
+import { getAuthToken, isAuthorized } from "../../auth";
+import axios, { AxiosError } from "axios";
+import { SnackbarContext } from "../SnackbarContext";
 
 export const MuseumDetails = () => {
+    const openSnackbar = useContext(SnackbarContext);
+    const [loading, setLoading] = useState(true);
+
 	const { museumId } = useParams();
 	const [museum, setMuseum] = useState<Museum>();
 
-    useEffect(() => {
-        const fetchMuseum = async () => {
-            const response = await axios.get<Museum>(
-                `${BACKEND_API_URL}/museums/${museumId}`,
-                {
+    const fetchMuseum = async () => {
+        setLoading(true);
+        try {
+            await axios
+                .get<Museum>(`${BACKEND_API_URL}/museums/${museumId}`, {
                     headers: {
                         Authorization: `Bearer ${getAuthToken()}`,
                     },
-                }
+                })
+                .then((response) => {
+                    const store = response.data;
+                    setMuseum(store);
+                    setLoading(false);
+                })
+                .catch((reason: AxiosError) => {
+                    console.log(reason.message);
+                    openSnackbar(
+                        "error",
+                        "Failed to fetch museum details!\n" +
+                            (String(reason.response?.data).length > 255
+                                ? reason.message
+                                : reason.response?.data)
+                    );
+                });
+        } catch (error) {
+            console.log(error);
+            openSnackbar(
+                "error",
+                "Failed to fetch museum details due to an unknown error!"
             );
-            const museum = response.data;
-            setMuseum(museum);
-        };
+        }
+    };
+
+    useEffect(() => {
         fetchMuseum();
     }, [museumId]);
+
 
 	return (
         <Container>
@@ -66,22 +92,33 @@ export const MuseumDetails = () => {
                         size="large"
                         sx={{
                             color: "green",
-                            textTransform: "none",
-                            mt: 1,
-                            ml: 2.4,
+                                textTransform: "none",
+                                mt: 1,
+                                ml: 2.4,
                         }}
                         startIcon={<ArtTrackIcon />}
+                        disabled={!isAuthorized(museum?.user?.id)}
                     >
                         Add Exhibition
                     </Button>
                 </CardContent>
                 <CardActions sx={{ mb: 1, ml: 1, mt: 1 }}>
-                    <IconButton component={Link} sx={{ mr: 3 }} to={`/museums/${museumId}/edit`}>
-                        <EditIcon />
+                    <IconButton component={Link} to={`/museums/${museumId}/edit`}
+                        sx={{
+                            color: "gray",
+                            textTransform: "none",
+                        }}
+                        disabled={!isAuthorized(museum?.user?.id)}>
+                        <EditIcon /> Edit
                     </IconButton>
     
-                    <IconButton component={Link} sx={{ mr: 3 }} to={`/museums/${museumId}/delete`}>
-                        <DeleteForeverIcon sx={{ color: "red" }} />
+                    <IconButton component={Link} to={`/museums/${museumId}/delete`}
+                        sx={{
+                            color: "red",
+                            textTransform: "none",
+                        }}
+                        disabled={!isAuthorized(museum?.user?.id)}>
+                        <DeleteForeverIcon /> Delete
                     </IconButton>
                 </CardActions>
             </Card>

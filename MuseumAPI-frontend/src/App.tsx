@@ -29,13 +29,19 @@ import { AllExhibitions } from "./components/exhibitions/AllExhibitions";
 import { ArtistExhibitionAdd } from "./components/artists/ArtistExhibitionAdd";
 import { UserDetails } from "./components/users/UserDetails";
 import { UserRegister } from "./components/users/UserRegister";
-import { UserRegisterConfirm } from "./components/users/UserRegisterConfirm";
+import { UserConfirm } from "./components/users/UserConfirm";
 import { UserLogin } from "./components/users/UserLogin";
 import { MuseumExhibitionAdd } from "./components/museums/MuseumExhibitionAdd";
 import { ExhibitionAdd } from "./components/exhibitions/ExhibitionAdd";
 import { ExhibitionUpdate } from "./components/exhibitions/ExhibitionUpdate";
 import { ExhibitionDetails } from "./components/exhibitions/ExhibitionDetails";
 import { ExhibitionDelete } from "./components/exhibitions/ExhibitionDelete";
+import { Box } from "@mui/material";
+import { AdminPanel } from "./components/users/AdminPanel";
+import { AllUsers } from "./components/users/AllUsers";
+import { UserAdd } from "./components/users/UserAdd";
+import { UserDelete } from "./components/users/UserDelete";
+import { UserUpdate } from "./components/users/UserUpdate";
 
 const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(
     props,
@@ -91,8 +97,15 @@ function App() {
 
 						<Route path="/users/:userId/details" element={<UserDetails />}/>
                         <Route path="/users/register" element={<UserRegister />}/>
-                        <Route path="/users/register/confirm/:code" element={<UserRegisterConfirm />}/>
+                        <Route path="/users/register/confirm/:code" element={<UserConfirm />}/>
                         <Route path="/users/login" element={<UserLogin />} />
+
+						<Route path="/users/adminpanel" element={<AdminPanel />}/>
+						<Route path="/users" element={<AllUsers />} />
+                        <Route path="/users/:userId/details" element={<UserDetails />}/>
+                        <Route path="/users/add" element={<UserAdd />} />
+                        <Route path="/users/:userId/delete" element={<UserDelete />}/>
+                        <Route path="/users/:userId/edit" element={<UserUpdate />}/>
 
 						<Route path="/artists" element={<AllArtists />} />
 						<Route path="/artists/:artistId/details" element={<ArtistDetails />} />
@@ -123,6 +136,7 @@ function App() {
 						<Route path="/exhibitions/:artistId/:museumId/delete" element={<ExhibitionDelete />} />
 						<Route path="/exhibitions/:artistId/:museumId/edit" element={<ExhibitionUpdate />} />
 					</Routes>
+					<Box sx={{ mb: 4 }} />
 				</Router>
 			</SnackbarContext.Provider>
 		</React.Fragment>

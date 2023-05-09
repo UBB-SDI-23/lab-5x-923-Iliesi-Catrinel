@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import {Box, Button, CircularProgress, Container, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip} from "@mui/material";
 import ReadMoreIcon from "@mui/icons-material/ReadMore";
 import { Link } from "react-router-dom";
@@ -7,79 +7,22 @@ import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import AddIcon from "@mui/icons-material/Add";
 import { BACKEND_API_URL, formatDate } from "../../constants";
 import { Museum } from "../../models/Museum";
-import { getAccount, getAuthToken } from "../../auth";
-import axios from "axios";
+import { getAccount, getAuthToken, isAuthorized } from "../../auth";
+import axios, { AxiosError } from "axios";
+import { SnackbarContext } from "../SnackbarContext";
 
 export const AllMuseums = () => {
-    const [loading, setLoading] = useState(false);
+    const openSnackbar = useContext(SnackbarContext);
+    const [loading, setLoading] = useState(true);
     const [museums, setMuseums] = useState<Museum[]>([]);
 
 	const [sorting, setSorting] = useState({ key: 'column name', ascending: false });
 	
 	const [pageIndex, setPageIndex] = useState(0);
-    const [pageSize, setPageSize] = useState(5);
+    const [pageSize] = useState(getAccount()?.userProfile?.pagePreference ?? 5);
 	const [totalPages, setTotalPages] = useState(999999);
 
-	useEffect(() => {
-        const account = getAccount();
-
-        if (account && account.userProfile) {
-            setPageSize(account.userProfile.pagePreference ?? 5);
-        }
-    }, []);
-
-	async function fetchMuseums(page: number): Promise<Museum[]> {
-        const response = await axios.get<Museum[]>(
-            `${BACKEND_API_URL}/museums/${page}/${pageSize}`,
-            {
-                headers: {
-                    Authorization: `Bearer ${getAuthToken()}`,
-                },
-            }
-        );
-
-        return response.data;
-    }
-
-    useEffect(() => {
-        setLoading(true);
-
-        fetchMuseums(pageIndex).then((data) => {
-            setMuseums(data);
-            setLoading(false);
-        });
-    }, [pageIndex, pageSize]);
-
-	useEffect(() => {
-        const fetchPageCount = async () => {
-            const response = await axios.get<number>(
-                `${BACKEND_API_URL}/museums/count/${pageSize}`,
-                {
-                    headers: {
-                        Authorization: `Bearer ${getAuthToken()}`,
-                    },
-                }
-            );
-            const count = response.data;
-            setTotalPages(count);
-        };
-        fetchPageCount();
-    }, [pageSize]);
-
-    useEffect(() => {
-        setLoading(true);
-
-        fetchMuseums(pageIndex).then((data) => {
-            setMuseums(data);
-            setLoading(false);
-        });
-    }, [pageIndex, pageSize]);
-
-	function handlePageClick(pageNumber: number) {
-        setPageIndex(pageNumber - 1);
-    }
-
-    const displayedPages = 9;
+	const displayedPages = 9;
 
     let startPage = pageIndex - Math.floor((displayedPages - 3) / 2) + 1;
     let endPage = startPage + displayedPages - 3;
@@ -91,6 +34,85 @@ export const AllMuseums = () => {
         startPage = totalPages - displayedPages + 2;
         endPage = totalPages;
     }
+
+    function handlePageClick(pageNumber: number) {
+        setPageIndex(pageNumber - 1);
+    }
+
+    const fetchPageCount = async () => {
+        try {
+            await axios
+                .get<number>(`${BACKEND_API_URL}/museums/count/${pageSize}`, {
+                    headers: {
+                        Authorization: `Bearer ${getAuthToken()}`,
+                    },
+                })
+                .then((response) => {
+                    const data = response.data;
+                    setTotalPages(data);
+                })
+                .catch((reason: AxiosError) => {
+                    console.log(reason.message);
+                    openSnackbar(
+                        "error",
+                        "Failed to fetch page count!\n" +
+                            (String(reason.response?.data).length > 255
+                                ? reason.message
+                                : reason.response?.data)
+                    );
+                });
+        } catch (error) {
+            console.log(error);
+            openSnackbar(
+                "error",
+                "Failed to fetch page count due to an unknown error!"
+            );
+        }
+    };
+
+    useEffect(() => {
+        fetchPageCount();
+    }, [pageSize]);
+
+	const fetchMuseums = async () => {
+        setLoading(true);
+        try {
+            await axios
+                .get<Museum[]>(
+                    `${BACKEND_API_URL}/museums/${pageIndex}/${pageSize}`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${getAuthToken()}`,
+                        },
+                    }
+                )
+                .then((response) => {
+                    const data = response.data;
+                    setMuseums(data);
+                    setLoading(false);
+                })
+                .catch((reason: AxiosError) => {
+                    console.log(reason.message);
+                    openSnackbar(
+                        "error",
+                        "Failed to fetch museums!\n" +
+                            (String(reason.response?.data).length > 255
+                                ? reason.message
+                                : reason.response?.data)
+                    );
+                });
+        } catch (error) {
+            console.log(error);
+            openSnackbar(
+                "error",
+                "Failed to fetch stores due to an unknown error!"
+            );
+        }
+    };
+
+    useEffect(() => {
+        fetchMuseums();
+    }, [pageIndex, pageSize]);
 
 	function applySorting(key: string, ascending: boolean) {
 		setSorting({ key: key, ascending: ascending });
@@ -120,7 +142,7 @@ export const AllMuseums = () => {
 			{loading && <CircularProgress />}
 			{!loading && museums.length === 0 && <p>No museums found!</p>}
 			{!loading && (
-				<IconButton component={Link} sx={{ mr: 3 }} to={`/museums/add`}>
+				<IconButton component={Link} sx={{ mr: 3 }} to={`/museums/add`} disabled={getAccount() === null}>
 					<Tooltip title="Add a new museum" arrow>
 						<AddIcon color="primary" />
 					</Tooltip>
@@ -169,19 +191,43 @@ export const AllMuseums = () => {
                                     <Box display="flex" justifyContent="center" alignItems="flex-start">
 										<IconButton
 											component={Link}
-											sx={{ mr: 3 }}
 											to={`/museums/${museum.id}/details`}>
 											<Tooltip title="View museum details" arrow>
 												<ReadMoreIcon color="primary" />
 											</Tooltip>
 										</IconButton>
 
-										<IconButton component={Link} sx={{ mr: 3 }} to={`/museums/${museum.id}/edit`}>
+										<IconButton component={Link} sx={{ ml: 1, mr: 1 }} 
+                                                to={`/museums/${museum.id}/edit`}
+                                                disabled={
+                                                    !isAuthorized(
+                                                        museum.user?.id
+                                                    )
+                                                }>
+                                                <Tooltip
+                                                    title="Edit museum"
+                                                    arrow
+                                                >
 											<EditIcon />
+                                            </Tooltip>
 										</IconButton>
 
-										<IconButton component={Link} sx={{ mr: 3 }} to={`/museums/${museum.id}/delete`}>
-											<DeleteForeverIcon sx={{ color: "red" }} />
+										<IconButton component={Link} 
+                                                to={`/museums/${museum.id}/delete`}
+                                                disabled={
+                                                    !isAuthorized(
+                                                        museum.user?.id
+                                                    )
+                                                }
+                                                sx={{
+                                                    color: "red",
+                                                }}>
+                                                <Tooltip
+                                                    title="Delete museum"
+                                                    arrow
+                                                >
+											<DeleteForeverIcon />
+                                            </Tooltip>
 										</IconButton>
 									</Box>
 								</TableRow>
@@ -197,7 +243,6 @@ export const AllMuseums = () => {
                         justifyContent: "center",
                         alignItems: "center",
                         marginTop: 16,
-						marginBottom: 16,
                     }}
                 >
                     <Button

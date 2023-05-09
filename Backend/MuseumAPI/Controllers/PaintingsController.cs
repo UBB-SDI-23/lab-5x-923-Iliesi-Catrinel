@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -27,6 +28,7 @@ namespace MuseumAPI.Controllers
 
         // GET: api/Paintings/count/10
         [HttpGet("count/{pageSize}")]
+        [AllowAnonymous]
         public async Task<int> GetTotalNumberOfPages(int pageSize = 10)
         {
             int total = await _context.Paintings.CountAsync();
@@ -51,6 +53,7 @@ namespace MuseumAPI.Controllers
 
         // GET: api/Paintings?page=0&pageSize=10
         [HttpGet("{page}/{pageSize}")]
+        [AllowAnonymous]
         public async Task<ActionResult<IEnumerable<Painting>>> GetPaintingPagination(int page = 0, int pageSize = 10)
         {
             if (_context.Paintings == null)
@@ -66,6 +69,7 @@ namespace MuseumAPI.Controllers
 
         // GET: api/Paintings/5
         [HttpGet("{id}")]
+        [AllowAnonymous]
         public async Task<ActionResult<Painting>> GetPainting(long id)
         {
             if (_context.Paintings == null)
@@ -73,8 +77,8 @@ namespace MuseumAPI.Controllers
                 return NotFound();
             }
 
-            // var painting = await _context.Paintings.FindAsync(id);
             var painting = await _context.Paintings
+                .Include(p => p.User)
                 .Include(p => p.Artist)
                 .FirstOrDefaultAsync(p => p.Id == id);
 
@@ -118,19 +122,26 @@ namespace MuseumAPI.Controllers
                 return NotFound();
             }
 
-            // Search for artist id and return BadRequest if invalid
-            var artist = await _context.Artists.FindAsync(paintingDTO.ArtistId);
+            var extracted = UsersController.ExtractJWTToken(User);
+            if (extracted == null)
+                return Unauthorized("Invalid token.");
 
-            if (artist == null)
-            {
-                return BadRequest();
-            }
+            if (extracted.Item2 == AccessLevel.Regular && painting.UserId != extracted.Item1)
+                return Unauthorized("You can only update your own entities.");
 
             String validationErrors = _validator.ValidatePainting(paintingDTO);
 
             if (validationErrors != String.Empty)
             {
                 return BadRequest("ERROR:\n" + validationErrors);
+            }
+
+            // Search for artist id and return BadRequest if invalid
+            var artist = await _context.Artists.FindAsync(paintingDTO.ArtistId);
+
+            if (artist == null)
+            {
+                return BadRequest();
             }
 
             painting.Title = paintingDTO.Title;
@@ -171,19 +182,23 @@ namespace MuseumAPI.Controllers
                 return Problem("Entity set 'MuseumContext.Paintings'  is null.");
             }
 
-            // Search for artist id and return BadRequest if invalid
-            var artist = await _context.Artists.FindAsync(paintingDTO.ArtistId);
-
-            if (artist == null)
-            {
-                return BadRequest();
-            }
+            var extracted = UsersController.ExtractJWTToken(User);
+            if (extracted == null)
+                return Unauthorized("Invalid token.");
 
             String validationErrors = _validator.ValidatePainting(paintingDTO);
 
             if (validationErrors != String.Empty)
             {
                 return BadRequest("ERROR:\n" + validationErrors);
+            }
+
+            // Search for artist id and return BadRequest if invalid
+            var artist = await _context.Artists.FindAsync(paintingDTO.ArtistId);
+
+            if (artist == null)
+            {
+                return BadRequest();
             }
 
             var painting = new Painting
@@ -196,6 +211,8 @@ namespace MuseumAPI.Controllers
 
                 ArtistId = paintingDTO.ArtistId,
                 Artist = artist,
+
+                UserId = extracted.Item1
             };
 
             _context.Paintings.Add(painting);
@@ -220,6 +237,13 @@ namespace MuseumAPI.Controllers
                 return NotFound();
             }
 
+            var extracted = UsersController.ExtractJWTToken(User);
+            if (extracted == null)
+                return Unauthorized("Invalid token.");
+
+            if (extracted.Item2 == AccessLevel.Regular && painting.UserId != extracted.Item1)
+                return Unauthorized("You can only delete your own entities.");
+
             _context.Paintings.Remove(painting);
             await _context.SaveChangesAsync();
 
@@ -228,14 +252,19 @@ namespace MuseumAPI.Controllers
 
         // FILTER: api/Paintings/Filter?year=1800
         [HttpGet("Filter")]
-        public async Task<ActionResult<IEnumerable<PaintingDTO>>> GetPaintingsByCreationYear(int year)
+        [AllowAnonymous]
+        public async Task<ActionResult<IEnumerable<Painting>>> GetPaintingsByCreationYear(int year)
         {
             if (_context.Paintings == null)
             {
                 return NotFound();
             }
 
-            return await _context.Paintings.Where(x => x.CreationYear > year).Take(100).Select(x => PaintingToDTO(x)).ToListAsync();
+            return await _context.Paintings
+                .Include(p => p.Artist)
+                .Where(x => x.CreationYear > year)
+                .Take(100)
+                .ToListAsync();
         }
 
         private bool PaintingExists(long id)
