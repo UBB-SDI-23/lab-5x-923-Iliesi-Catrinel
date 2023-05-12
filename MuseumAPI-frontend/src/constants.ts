@@ -1,4 +1,4 @@
-const PROD_BACKEND_API_URL = "https://museumapi.azurewebsites.net/api";  // production
+const PROD_BACKEND_API_URL = "https://museumapi.ddns.net/api";  // production
 const DEV_BACKEND_API_URL = "http://localhost:5133/api";                 // development
 
 export const BACKEND_API_URL =
