@@ -20,6 +20,16 @@ namespace PaintingsAPI
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            builder.Services.AddCors(options =>
+            {
+                options.AddDefaultPolicy(policy =>
+                {
+                    policy.WithOrigins("https://museumapi-frontend.netlify.app/").AllowAnyHeader().AllowAnyMethod();
+                });
+            }
+            );
+
+
             // add services to the container
             //builder.Services.AddControllers().AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
             // builder.Services.AddControllers();
@@ -115,6 +125,7 @@ namespace PaintingsAPI
             app.UseHttpsRedirection();
 
             app.UseAuthentication();
+            app.UseCors();
             app.UseAuthorization();
 
             app.MapControllers();
