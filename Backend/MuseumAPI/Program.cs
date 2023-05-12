@@ -24,11 +24,11 @@ namespace PaintingsAPI
             {
                 options.AddDefaultPolicy(policy =>
                 {
-                    policy.WithOrigins("https://museumapi-frontend.netlify.app/").AllowAnyHeader().AllowAnyMethod();
+                    policy.WithOrigins("https://museumapi-frontend.netlify.app")
+                        .AllowAnyHeader()
+                        .AllowAnyMethod();
                 });
-            }
-            );
-
+            });
 
             // add services to the container
             //builder.Services.AddControllers().AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
@@ -123,13 +123,12 @@ namespace PaintingsAPI
             }
 
             app.UseHttpsRedirection();
-
             app.UseAuthentication();
+            
             app.UseCors();
             app.UseAuthorization();
 
             app.MapControllers();
-
             app.Run();
         }
     }
