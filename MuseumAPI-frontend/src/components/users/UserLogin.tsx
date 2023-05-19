@@ -92,6 +92,7 @@ export const UserLogin = () => {
                     <form>
                         <TextField
                             id="name"
+                            data-testid="name-input"
                             label="Name"
                             variant="outlined"
                             fullWidth
@@ -105,6 +106,7 @@ export const UserLogin = () => {
                         />
                         <TextField
                             id="password"
+                            data-testid="password-input"
                             label="Password"
                             variant="outlined"
                             type="password"
@@ -120,7 +122,7 @@ export const UserLogin = () => {
                     </form>
                 </CardContent>
                 <CardActions sx={{ mb: 1, ml: 1, mt: 1 }}>
-                    <Button onClick={userLogin} variant="contained">
+                    <Button onClick={userLogin} variant="contained" data-testid="login">
                         Log In
                     </Button>
                 </CardActions>

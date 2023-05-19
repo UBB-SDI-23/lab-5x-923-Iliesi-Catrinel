@@ -1,4 +1,4 @@
-import { AppBar, Box, Button, IconButton, Toolbar, Typography } from "@mui/material";
+import { AppBar, Box, Button, IconButton, Menu, MenuItem, Toolbar, Typography, useMediaQuery, useTheme } from "@mui/material";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import BrushIcon from '@mui/icons-material/Brush';
 import MuseumIcon from '@mui/icons-material/Museum';
@@ -10,8 +10,9 @@ import HeightIcon from '@mui/icons-material/Height';
 import TodayIcon from '@mui/icons-material/Today';
 import { getAccount, logOut } from "../auth";
 import { SnackbarContext } from "./SnackbarContext";
-import { useContext } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import LogoutIcon from "@mui/icons-material/Logout";
+import MenuIcon from '@mui/icons-material/Menu';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import { AccessLevel } from "../models/User";
 
@@ -22,6 +23,18 @@ export const AppMenu = () => {
 
     const location = useLocation();
 	const path = location.pathname;
+
+	const theme = useTheme();
+    const isSmallScreen = useMediaQuery(theme.breakpoints.down("lg"));
+    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+
+    const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+        setAnchorEl(event.currentTarget);
+    };
+
+    const handleMenuClose = () => {
+        setAnchorEl(null);
+    };
 
 	const accountNameClick = (event: { preventDefault: () => void }) => {
         event.preventDefault();
@@ -42,154 +55,181 @@ export const AppMenu = () => {
         openSnackbar("info", "Logged out successfully!");
     };
 
+	const menuItems = [
+        { link: "/artists", title: "Artists", icon: <PersonSearchIcon /> },
+        { link: "/paintings", title: "Paintings", icon: <BrushIcon /> },
+        { link: "/filterpaintings", title: "Filter", icon: <ColorLensIcon /> },
+		{ link: "/museums", title: "Museums", icon: <MuseumIcon /> },
+		{ link: "/exhibitions", title: "Exhibitions", icon: <ArtTrackIcon /> },
+		{ link: "/agereport", title: "Age Report", icon: <TodayIcon /> },
+		{ link: "/heightreport", title: "Height Report", icon: <HeightIcon /> },
+    ];
+
 	return (
-		<Box sx={{ flexGrow: 1, position: "sticky", top: "0", zIndex: "9" }}>
-			<AppBar position="static" sx={{ marginBottom: "20px"}}>
-				<Toolbar sx={{ display: "flex", flexWrap: "nowrap" }}>
-					<IconButton
-						component={Link}
-						to="/"
-						size="large"
-						edge="start"
-						color="inherit"
-						aria-label="school"
-						sx={{ mr: 2 }}>
-						<HomeIcon />
-					</IconButton>
-					<Typography variant="h6" component="div" sx={{ mr: 2, whiteSpace: "nowrap" }}>
-						MUSEUM MANAGEMENT
-					</Typography>
-					<Box sx={{ display: "flex", alignItems: "center" }}>
-					<Button
-						variant={path.startsWith("/artists") ? "outlined" : "text"}
-						to="/artists"
-						component={Link}
-						color="inherit"
-						sx={{ mr: 4 }}
-						startIcon={<PersonSearchIcon />}>
-						Artists
-					</Button>
-					
-					<Button
-						variant={path.startsWith("/paintings") ? "outlined" : "text"}
-						to="/paintings"
-						component={Link}
-						color="inherit"
-						sx={{ mr: 4 }}
-						startIcon={<BrushIcon />}>
-						Paintings
-					</Button>
+        <Box sx={{ flexGrow: 1, position: "sticky", top: "0", zIndex: "9" }}>
+            <AppBar position="static" sx={{ marginBottom: "20px" }}>
+                <Toolbar>
+                    {isSmallScreen ? (
+                        <>
+                            <IconButton
+                                size="large"
+                                edge="start"
+                                color="inherit"
+                                aria-label="menu"
+                                onClick={handleMenuOpen}
+                                sx={{ mr: 2 }}
+                            >
+                                <MenuIcon />
+                            </IconButton>
+                            <Typography
+                                variant="h6"
+                                component="div"
+                                sx={{ mr: 5, whiteSpace: "nowrap" }}
+                            >
+                                Museum Management
+                            </Typography>
 
-					<Button
-						variant={path.startsWith("/filterpaintings") ? "outlined" : "text"}
-						to="/filterpaintings"
-						component={Link}
-						color="inherit"
-						sx={{ mr: 4}}
-						startIcon={<ColorLensIcon />}>
-						Filter
-					</Button>
+                            <Menu
+                                anchorEl={anchorEl}
+                                open={Boolean(anchorEl)}
+                                onClose={handleMenuClose}
+                            >
+                                <MenuItem
+                                    onClick={handleMenuClose}
+                                    component={Link}
+                                    to="/"
+                                >
+                                    <IconButton size="large" color="inherit">
+                                        <HomeIcon />
+                                    </IconButton>
+                                    Home
+                                </MenuItem>
 
-					<Button
-						variant={path.startsWith("/museums") ? "outlined" : "text"}
-						to="/museums"
-						component={Link}
-						color="inherit"
-						sx={{ mr: 4 }}
-						startIcon={<MuseumIcon />}>
-						Museums
-					</Button>
+                                {menuItems.map((item) => (
+                                    <MenuItem
+                                        key={item.title}
+                                        onClick={handleMenuClose}
+                                        component={Link}
+                                        to={item.link}
+                                    >
+                                        <IconButton
+                                            size="large"
+                                            color="inherit"
+                                        >
+                                            {item.icon}
+                                        </IconButton>
+                                        {item.title}
+                                    </MenuItem>
+                                ))}
+                            </Menu>
+                        </>
+                    ) : (
+                        <>
+                            <IconButton
+                                component={Link}
+                                to="/"
+                                size="large"
+                                edge="start"
+                                color="inherit"
+                                aria-label="school"
+                                sx={{ mr: 2 }}
+                            >
+                                <HomeIcon />
+                            </IconButton>
+                            <Typography
+                                variant="h6"
+                                component="div"
+                                sx={{ mr: 5, whiteSpace: "nowrap" }}
+                            >
+                                Museum Management
+                            </Typography>
 
-					<Button
-						variant={path.startsWith("/exhibitions") ? "outlined" : "text"}
-						to="/exhibitions"
-						component={Link}
-						color="inherit"
-						sx={{ mr: 4 }}
-						startIcon={<ArtTrackIcon />}>
-						Exhibitions
-					</Button>
+                            {menuItems.map((item) => (
+                                <Button
+                                    key={item.title}
+                                    variant={
+                                        path.startsWith(item.link)
+                                            ? "outlined"
+                                            : "text"
+                                    }
+                                    to={item.link}
+                                    component={Link}
+                                    color="inherit"
+                                    sx={{ mr: 5 }}
+                                    startIcon={item.icon}
+                                >
+                                    {item.title}
+                                </Button>
+                            ))}
+                        </>
+                    )}
 
-					<Button
-						variant={path.startsWith("/agereport") ? "outlined" : "text"}
-						to="/agereport"
-						component={Link}
-						color="inherit"
-						sx={{ mr: 4, whiteSpace: "nowrap" }}
-						startIcon={<TodayIcon />}>
-						Age Report
-					</Button>
+                    <Box sx={{ display: "flex", marginLeft: "auto" }}>
+                        <IconButton
+                            component={Link}
+                            to={`/users/adminpanel`}
+                            size="large"
+                            edge="start"
+                            color="inherit"
+                            aria-label="school"
+                            sx={{
+                                mr: 0,
+                                display:
+                                    getAccount()?.accessLevel ===
+                                    AccessLevel.Admin
+                                        ? "inline-flex"
+                                        : "none",
+                            }}
+                        >
+                            <AdminPanelSettingsIcon />
+                        </IconButton>
 
-					<Button
-						variant={path.startsWith("/heightreport") ? "outlined" : "text"}
-						to="/heightreport"
-						component={Link}
-						color="inherit"
-						sx={{ mr: 4, whiteSpace: "nowrap" }}
-						startIcon={<HeightIcon />}>
-						Height Report
-					</Button>
-					
-					<Box sx={{ flexGrow: 1 }} />
+                        <Button
+                            variant="text"
+                            color="inherit"
+                            sx={{ mr: 2 }}
+                            onClick={accountNameClick}
+							data-testid="login-button"
+                        >
+                            {getAccount()?.name ?? "Log In"}
+                        </Button>
 
-					<IconButton
-                        component={Link}
-                        to={`/users/adminpanel`}
-                        size="large"
-                        edge="start"
-                        color="inherit"
-                        aria-label="school"
-                        sx={{
-                            mr: 0,
-                            display:
-                                getAccount()?.accessLevel === AccessLevel.Admin
-                                    ? "inline-flex"
-                                    : "none",
-                        }}
-                    >
-                        <AdminPanelSettingsIcon />
-                    </IconButton>
+                        <Button
+                            variant="text"
+                            to="/users/register"
+                            component={Link}
+                            color="inherit"
+                            sx={{
+                                mr: 0,
+                                display:
+                                    getAccount() !== null
+                                        ? "none"
+                                        : "inline-flex",
+                            }}
+							data-testid="register-button"
+                        >
+                            Register
+                        </Button>
 
-                    <Button
-                        variant="text"
-                        color="inherit"
-                        sx={{ mr: 2 }}
-                        onClick={accountNameClick}
-                    >
-                        {getAccount()?.name ?? "Log In"}
-                    </Button>
-
-                    <Button
-                        variant="text"
-                        to="/users/register"
-                        component={Link}
-                        color="inherit"
-                        sx={{
-                            mr: 0,
-                            display:
-                                getAccount() !== null ? "none" : "inline-flex",
-                        }}
-                    >
-                        Register
-                    </Button>
-
-                    <IconButton
-                        size="large"
-                        edge="start"
-                        color="inherit"
-                        aria-label="school"
-                        sx={{
-                            mr: 0,
-                            display:
-                                getAccount() !== null ? "inline-flex" : "none",
-                        }}
-                        onClick={logOutClick}
-                    >
-                        <LogoutIcon />
-                    </IconButton>
-					</Box>
-				</Toolbar>
-			</AppBar>
-		</Box>
-	);
+                        <IconButton
+                            size="large"
+                            edge="start"
+                            color="inherit"
+                            aria-label="school"
+                            sx={{
+                                mr: 0,
+                                display:
+                                    getAccount() !== null
+                                        ? "inline-flex"
+                                        : "none",
+                            }}
+                            onClick={logOutClick}
+                        >
+                            <LogoutIcon />
+                        </IconButton>
+                    </Box>
+                </Toolbar>
+            </AppBar>
+        </Box>
+    );
 };

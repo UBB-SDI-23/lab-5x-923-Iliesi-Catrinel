@@ -6,7 +6,6 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import axios, { AxiosError, AxiosResponse } from "axios";
 import { BACKEND_API_URL } from "../../constants";
 import { Artist } from "../../models/Artist";
-import { debounce } from "lodash";
 import "react-toastify/dist/ReactToastify.css";
 import { SnackbarContext } from "../SnackbarContext";
 import { getAuthToken } from "../../auth";
@@ -57,7 +56,7 @@ export const ArtistAdd = () => {
     };
 
 	return (
-		<Container>
+		<Container data-testid="test-add-container">
 			<Card>
 				<CardContent>
 					<IconButton component={Link} sx={{ mr: 3 }} to={`/artists`}>
@@ -66,6 +65,7 @@ export const ArtistAdd = () => {
 					<h1>Add Artist</h1>
 					<form id="addArtistForm" onSubmit={addArtist}>
 						<TextField
+							data-testid="test-firstname-input"
 							id="firstName"
 							label="First Name"
 							variant="outlined"
@@ -74,6 +74,7 @@ export const ArtistAdd = () => {
 							onChange={(event) => setArtist({ ...artist, firstName: event.target.value })}
 						/>
 						<TextField
+							data-testid="test-lastname-input"
 							id="lastName"
 							label="Last Name"
 							variant="outlined"
@@ -82,6 +83,7 @@ export const ArtistAdd = () => {
 							onChange={(event) => setArtist({ ...artist, lastName: event.target.value })}
 						/>
                         <TextField
+						    data-testid="test-birthdate-input"
 							id="birthDate"
 							label="Birth Date"
 							variant="outlined"
@@ -90,6 +92,7 @@ export const ArtistAdd = () => {
 							onChange={(event) => setArtist({ ...artist, birthDate: new Date(event.target.value) })}
 						/>
                         <TextField
+							data-testid="test-birthplace-input"
 							id="birthPlace"
 							label="Birth Place"
 							variant="outlined"
@@ -98,6 +101,7 @@ export const ArtistAdd = () => {
 							onChange={(event) => setArtist({ ...artist, birthPlace: event.target.value })}
 						/>
                         <TextField
+							data-testid="test-education-input"
 							id="education"
 							label="Education"
 							variant="outlined"
@@ -106,6 +110,7 @@ export const ArtistAdd = () => {
 							onChange={(event) => setArtist({ ...artist, education: event.target.value })}
 						/>
                         <TextField
+							data-testid="test-movement-input"
 							id="movement"
 							label="Movement"
 							variant="outlined"
@@ -116,7 +121,7 @@ export const ArtistAdd = () => {
 					</form>
 				</CardContent>
 				<CardActions sx={{ mb: 1, ml: 1, mt: 1 }}>
-					<Button type="submit" form="addArtistForm" variant="contained">Add Artist</Button>
+					<Button type="submit" form="addArtistForm" variant="contained" data-testid="test-add-btn">Add Artist</Button>
 				</CardActions>
 			</Card>
 		</Container>

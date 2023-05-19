@@ -8,17 +8,39 @@ import {
 	TableBody,
 	CircularProgress,
 	Container,
+    useTheme,
+    useMediaQuery,
+    CardContent,
+    Typography,
+    Card,
+    Grid,
 } from "@mui/material";
 
 import { useEffect, useState } from "react";
-import { BACKEND_API_URL } from "../../constants";
-import { ArtistStatistic } from "../../models/ArtistStatisticHeight";
+import { BACKEND_API_URL, formatDate } from "../../constants";
+import { ArtistStatisticHeight } from "../../models/ArtistStatisticHeight";
 import axios from "axios";
 import { getAuthToken } from "../../auth";
 
 export const ArtistAveragePaintingHeight = () => {
     const [loading, setLoading] = useState(true);
     const [artists, setArtists] = useState([]);
+
+    const theme = useTheme();
+    const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
+    const isMediumScreen = useMediaQuery(theme.breakpoints.down("md"));
+    const isLargeScreen = useMediaQuery(theme.breakpoints.down("lg"));
+
+    const headers = [
+        { text: "#", hide: false },
+        { text: "First Name", hide: false },
+        { text: "Last Name", hide: false },
+        { text: "Birth Date", hide: isLargeScreen },
+        { text: "Birth Place", hide: isLargeScreen },
+        { text: "Education", hide: isLargeScreen },
+        { text: "Movement", hide: false },
+        { text: "Average Age Of their Paintings", hide: false },
+    ];
 
     useEffect(() => {
         setLoading(true);
@@ -44,38 +66,88 @@ export const ArtistAveragePaintingHeight = () => {
         <h1>All Artists Ordered By The Average Height of their Paintings</h1>
         {loading && <CircularProgress />}
         {!loading && artists.length == 0 && <div>No artists found!</div>}
-        {!loading && artists.length > 0 && (
-            <TableContainer component={Paper}>
-                <Table sx={{ minWidth: 900 }} aria-label="simple table">
-                    <TableHead>
-                        <TableRow>
-                            <TableCell>#</TableCell>
-                            <TableCell align="left">First Name</TableCell>
-                            <TableCell align="left">Last Name</TableCell>
-                            <TableCell align="left">Birth Date</TableCell>
-                            <TableCell align="left">Birth Place</TableCell>
-                            <TableCell align="left">Education</TableCell>
-                            <TableCell align="left">Movement</TableCell>
-                            <TableCell align="left">Average Height Of their Paintings</TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {artists.map((artist:ArtistStatistic, index) => (
-                            <TableRow key={artist.id}>
-                                <TableCell component="th" scope="row">{index + 1}</TableCell>
-                                <TableCell align="left">{artist.firstName}</TableCell>
-                                <TableCell align="left">{artist.lastName}</TableCell>
-                                <TableCell align="left">{artist.birthDate.toLocaleString()}</TableCell>
-                                <TableCell align="left">{artist.birthPlace}</TableCell>
-                                <TableCell align="left">{artist.education}</TableCell>
-                                <TableCell align="left">{artist.movement}</TableCell>
-                                <TableCell align="left">{artist.averagePaintingHeight}</TableCell>
-                            </TableRow>
-                        ))}
-                </TableBody>
-                </Table>
-            </TableContainer>
-        )}
-    </Container>
-    )
-}
+        {!loading && artists.length > 0 && (isMediumScreen ? (
+            <Grid container spacing={3}>
+                {artists.map((artist: ArtistStatisticHeight, index) => (
+                    <Grid item xs={12} sm={6} md={4} key={artist.id}>
+                        <Card>
+                            <CardContent>
+                                <Typography
+                                    variant="h6"
+                                    component="div"
+                                >
+                                    {artist.firstName} {" "}{artist.lastName}
+                                </Typography>
+                                <Typography color="text.secondary">
+                                    {"Movement: "}
+                                    {artist.movement}
+                                </Typography>
+                                <Typography color="text.secondary">
+                                    Average Painting Age: {artist.averagePaintingHeight}
+                                </Typography>
+                            </CardContent>
+                        </Card>
+                    </Grid>
+                ))}
+            </Grid>
+                ) : (
+                    <TableContainer component={Paper}>
+                        <Table sx={{ minWidth: 0 }} aria-label="simple table">
+                            <TableHead>
+                                <TableRow>
+                                    {headers.map((header, i) => {
+                                        if (header.hide) {
+                                            return null;
+                                        }
+                                        return (
+                                            <TableCell
+                                                key={i}
+                                                style={{ userSelect: "none" }}
+                                                align="left"
+                                            >
+                                                {header.text}
+                                            </TableCell>
+                                        );
+                                    })}
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {artists.map(
+                                    (artist: ArtistStatisticHeight, index) => {
+                                        const artistData = [
+                                            index + 1,
+                                            artist.firstName,
+                                            artist.lastName,
+                                            formatDate(artist.birthDate),
+                                            artist.birthPlace,
+                                            artist.education,
+                                            artist.movement,
+                                            artist.averagePaintingHeight,
+                                        ];
+                                        return (
+                                            <TableRow key={artist.id}>
+                                                {artistData.map((data, i) => {
+                                                    const header = headers[i];
+                                                    if (header.hide) {
+                                                        return null;
+                                                    }
+                                                    return (
+                                                        <TableCell
+                                                            key={i}
+                                                            align="left"
+                                                        >
+                                                            {data}
+                                                        </TableCell>
+                                                    );
+                                                })}
+                                            </TableRow>
+                                        );
+                                    }
+                                )}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
+                ))}
+        </Container>
+    );
+};

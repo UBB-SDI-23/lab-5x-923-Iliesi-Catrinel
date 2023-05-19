@@ -219,6 +219,7 @@ export const UserRegister = () => {
                                     <MenuItem
                                         key={genderValue}
                                         value={genderValue}
+                                        data-testid="gender-option-Male"
                                     >
                                         {Gender[genderValue]}
                                     </MenuItem>
@@ -249,6 +250,7 @@ export const UserRegister = () => {
                                         <MenuItem
                                             key={maritalStatusValue}
                                             value={maritalStatusValue}
+                                            data-testid="marital-option-Single"
                                         >
                                             {MaritalStatus[maritalStatusValue]}
                                         </MenuItem>
@@ -259,7 +261,7 @@ export const UserRegister = () => {
                     </form>
                 </CardContent>
                 <CardActions sx={{ mb: 1, ml: 1, mt: 1 }}>
-                    <Button onClick={userRegister} variant="contained">
+                    <Button onClick={userRegister} variant="contained" id="register">
                         Register
                     </Button>
                 </CardActions>

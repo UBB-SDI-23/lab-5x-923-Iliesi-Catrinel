@@ -12,6 +12,13 @@ import {
     Tooltip,
     Button,
     Box,
+    useTheme,
+    useMediaQuery,
+    Grid,
+    Card,
+    CardContent,
+    Typography,
+    CardActions,
 } from "@mui/material";
 
 import { useEffect, useState, useContext } from "react";
@@ -20,6 +27,7 @@ import { BACKEND_API_URL } from "../../constants";
 import axios, { AxiosError } from "axios";
 import { SnackbarContext } from "../SnackbarContext";
 import { getAccount, getAuthToken } from "../../auth";
+import Paginator from "../Paginator";
 import { AccessLevel, User } from "../../models/User";
 
 import AddIcon from "@mui/icons-material/Add";
@@ -34,59 +42,18 @@ export const AllUsers = () => {
 
     const [pageSize] = useState(getAccount()?.userProfile?.pagePreference ?? 5);
     const [pageIndex, setPageIndex] = useState(0);
-    const [totalPages, setTotalPages] = useState(999999);
 
-    const displayedPages = 9;
+    const theme = useTheme();
+    const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
+    const isMediumScreen = useMediaQuery(theme.breakpoints.down("md"));
+    const isLargeScreen = useMediaQuery(theme.breakpoints.down("lg"));
 
-    let startPage = pageIndex - Math.floor((displayedPages - 3) / 2) + 1;
-    let endPage = startPage + displayedPages - 3;
-
-    if (startPage <= 2) {
-        startPage = 1;
-        endPage = displayedPages - 1;
-    } else if (endPage >= totalPages - 1) {
-        startPage = totalPages - displayedPages + 2;
-        endPage = totalPages;
-    }
-
-    function handlePageClick(pageNumber: number) {
-        setPageIndex(pageNumber - 1);
-    }
-
-    const fetchPageCount = async () => {
-        try {
-            await axios
-                .get<number>(`${BACKEND_API_URL}/users/count/${pageSize}`, {
-                    headers: {
-                        Authorization: `Bearer ${getAuthToken()}`,
-                    },
-                })
-                .then((response) => {
-                    const data = response.data;
-                    setTotalPages(data);
-                })
-                .catch((reason: AxiosError) => {
-                    console.log(reason.message);
-                    openSnackbar(
-                        "error",
-                        "Failed to fetch page count!\n" +
-                            (String(reason.response?.data).length > 255
-                                ? reason.message
-                                : reason.response?.data)
-                    );
-                });
-        } catch (error) {
-            console.log(error);
-            openSnackbar(
-                "error",
-                "Failed to fetch page count due to an unknown error!"
-            );
-        }
-    };
-
-    useEffect(() => {
-        fetchPageCount();
-    }, [pageSize]);
+    const headers = [
+        { text: "#", hide: false },
+        { text: "User", hide: false },
+        { text: "Access Level", hide: false },
+        { text: "Operations", hide: false },
+    ];
 
     const fetchUsers = async () => {
         setLoading(true);
@@ -157,60 +124,98 @@ export const AllUsers = () => {
             {!loading && users.length === 0 && (
                 <p style={{ marginLeft: 16 }}>No users found.</p>
             )}
-            {!loading && users.length > 0 && (
-                <TableContainer component={Paper}>
-                    <Table sx={{ minWidth: 650 }} aria-label="simple table">
-                        <TableHead>
-                            <TableRow>
-                                <TableCell style={{ userSelect: "none" }}>
-                                    #
-                                </TableCell>
-                                <TableCell
-                                    align="left"
-                                    style={{
-                                        whiteSpace: "nowrap",
-                                        userSelect: "none",
-                                    }}
-                                >
-                                    User
-                                </TableCell>
-                                <TableCell
-                                    align="left"
-                                    style={{
-                                        whiteSpace: "nowrap",
-                                        userSelect: "none",
-                                    }}
-                                >
-                                    Access Level
-                                </TableCell>
-                                <TableCell
-                                    align="center"
-                                    style={{
-                                        whiteSpace: "nowrap",
-                                        userSelect: "none",
-                                    }}
-                                >
-                                    Operations
-                                </TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {users.map((user, index) => (
-                                <TableRow key={user.id}>
-                                    <TableCell component="th" scope="row">
-                                        {pageIndex * pageSize + index + 1}
-                                    </TableCell>
-                                    <TableCell align="left">
-                                    <Link to={`/users/${user.id}/details`} title="View user details">
-										{user.name}
-									</Link>
-                                    </TableCell>
-                                    <TableCell align="left">
-                                        {user.accessLevel !== undefined
+            {!loading &&
+                users.length > 0 &&
+                (isMediumScreen ? (
+                    <Grid container spacing={3}>
+                        {users.map((user, index) => (
+                            <Grid item xs={12} sm={6} md={4} key={user.id}>
+                                <Card>
+                                    <CardContent>
+                                        <Typography
+                                            variant="h6"
+                                            component="div"
+                                        >
+                                            {user.name}
+                                        </Typography>
+                                        <Typography color="text.secondary">
+                                            {"Access Level: "}
+                                            {user.accessLevel !== undefined
+                                                ? AccessLevel[user.accessLevel]
+                                                : "Unknown"}
+                                        </Typography>
+                                    </CardContent>
+                                    <CardActions>
+                                        <IconButton
+                                            component={Link}
+                                            to={`/users/${user.id}/details`}
+                                        >
+                                            <Tooltip
+                                                title="View user details"
+                                                arrow
+                                            >
+                                                <ReadMoreIcon color="primary" />
+                                            </Tooltip>
+                                        </IconButton>
+                                        <IconButton
+                                            component={Link}
+                                            sx={{ ml: 1, mr: 1 }}
+                                            to={`/users/${user.id}/edit`}
+                                        >
+                                            <Tooltip title="Edit user" arrow>
+                                                <EditIcon />
+                                            </Tooltip>
+                                        </IconButton>
+                                        <IconButton
+                                            component={Link}
+                                            to={`/users/${user.id}/delete`}
+                                        >
+                                            <Tooltip title="Delete user" arrow>
+                                                <DeleteForeverIcon
+                                                    sx={{
+                                                        color: "red",
+                                                    }}
+                                                />
+                                            </Tooltip>
+                                        </IconButton>
+                                    </CardActions>
+                                </Card>
+                            </Grid>
+                        ))}
+                    </Grid>
+                ) : (
+                    <TableContainer component={Paper}>
+                        <Table sx={{ minWidth: 0 }} aria-label="simple table">
+                            <TableHead>
+                                <TableRow>
+                                    {headers.map((header, i) => {
+                                        if (header.hide) {
+                                            return null;
+                                        }
+                                        return (
+                                            <TableCell
+                                                key={i}
+                                                style={{ userSelect: "none" }}
+                                                align={
+                                                    header.text === "Operations"
+                                                        ? "center"
+                                                        : "left"
+                                                }
+                                            >
+                                                {header.text}
+                                            </TableCell>
+                                        );
+                                    })}
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {users.map((user, index) => {
+                                    const userData = [
+                                        pageIndex * pageSize + index + 1,
+                                        user.name,
+                                        user.accessLevel !== undefined
                                             ? AccessLevel[user.accessLevel]
-                                            : "Unknown"}
-                                    </TableCell>
-                                    <TableCell align="center">
+                                            : "Unknown",
                                         <Box
                                             display="flex"
                                             alignItems="flex-start"
@@ -254,100 +259,43 @@ export const AllUsers = () => {
                                                     />
                                                 </Tooltip>
                                             </IconButton>
-                                        </Box>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
-            )}
-            {!loading && (
-                <div
-                    style={{
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center",
-                        marginTop: 16,
-                    }}
-                >
-                    <Button
-                        variant="contained"
-                        onClick={() =>
-                            setPageIndex((prevPageIndex) =>
-                                Math.max(prevPageIndex - 1, 0)
-                            )
-                        }
-                        disabled={pageIndex === 0}
-                    >
-                        &lt;
-                    </Button>
-                    {startPage > 1 && (
-                        <>
-                            <Button
-                                variant={
-                                    pageIndex === 0 ? "contained" : "outlined"
-                                }
-                                onClick={() => handlePageClick(1)}
-                                style={{
-                                    marginLeft: 8,
-                                    marginRight: 8,
-                                }}
-                            >
-                                1
-                            </Button>
-                            <span>...</span>
-                        </>
-                    )}
-                    {Array.from(
-                        { length: endPage - startPage + 1 },
-                        (_, i) => i + startPage
-                    ).map((number) => (
-                        <Button
-                            key={number}
-                            variant={
-                                pageIndex === number - 1
-                                    ? "contained"
-                                    : "outlined"
-                            }
-                            onClick={() => handlePageClick(number)}
-                            style={{
-                                marginLeft: 8,
-                                marginRight: 8,
-                            }}
-                        >
-                            {number}
-                        </Button>
-                    ))}
-                    {endPage < totalPages && (
-                        <>
-                            <span>...</span>
-                            <Button
-                                variant={
-                                    pageIndex === totalPages - 1
-                                        ? "contained"
-                                        : "outlined"
-                                }
-                                onClick={() => handlePageClick(totalPages)}
-                                style={{
-                                    marginLeft: 8,
-                                    marginRight: 8,
-                                }}
-                            >
-                                {totalPages}
-                            </Button>
-                        </>
-                    )}
-                    <Button
-                        variant="contained"
-                        onClick={() =>
-                            setPageIndex((prevPageIndex) => prevPageIndex + 1)
-                        }
-                        disabled={pageIndex + 1 >= totalPages}
-                    >
-                        &gt;
-                    </Button>
-                </div>
+                                        </Box>,
+                                    ];
+                                    return (
+                                        <TableRow key={user.id}>
+                                            {userData.map((data, i) => {
+                                                const header = headers[i];
+                                                if (header.hide) {
+                                                    return null;
+                                                }
+                                                return (
+                                                    <TableCell
+                                                        key={i}
+                                                        align={
+                                                            header.text ===
+                                                            "Operations"
+                                                                ? "center"
+                                                                : "left"
+                                                        }
+                                                    >
+                                                        {data}
+                                                    </TableCell>
+                                                );
+                                            })}
+                                        </TableRow>
+                                    );
+                                })}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
+                ))}
+            {!loading && users.length > 0 && (
+                <Paginator
+                    route="users"
+                    pageSize={pageSize}
+                    pageIndex={pageIndex}
+                    setPageIndex={setPageIndex}
+                />
             )}
         </Container>
     );

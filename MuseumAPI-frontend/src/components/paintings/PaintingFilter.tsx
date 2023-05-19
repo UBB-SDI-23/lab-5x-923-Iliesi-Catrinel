@@ -1,5 +1,5 @@
 import { useState,useContext  } from 'react';
-import { TextField, Button, Container, TableContainer, Table, colors, TableHead, TableCell, TableRow, TableBody, Tooltip, IconButton, Paper } from '@mui/material';
+import { TextField, Button, Container, TableContainer, Table, colors, TableHead, TableCell, TableRow, TableBody, Tooltip, IconButton, Paper, useTheme, useMediaQuery, Grid, CardContent, Card, Typography, CardActions, Box } from '@mui/material';
 import ReadMoreIcon from "@mui/icons-material/ReadMore"
 import EditIcon from "@mui/icons-material/Edit"
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever"
@@ -9,6 +9,7 @@ import { Painting } from '../../models/Painting';
 import { getAuthToken, isAuthorized } from '../../auth';
 import { SnackbarContext } from '../SnackbarContext';
 import axios, { AxiosError } from 'axios';
+import Paginator from '../Paginator';
 
 export const PaintingFilter = () => {
     const openSnackbar = useContext(SnackbarContext);
@@ -16,6 +17,24 @@ export const PaintingFilter = () => {
     const [paintings, setPaintings] = useState<Painting[]>([]);
 
     const [yearText, setYearText] = useState("1900");
+
+    const theme = useTheme();
+    const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
+    const isMediumScreen = useMediaQuery(theme.breakpoints.down("md"));
+    const isLargeScreen = useMediaQuery(theme.breakpoints.down("lg"));
+
+    const headers = [
+        { text: "#", propName: "", hide: false },
+        { text: "Title", propName: "title", hide: false },
+        { text: "Creation Year", propName: "year", hide: false },
+        { text: "Height", propName: "height", hide: isLargeScreen },
+        { text: "Subject", propName: "subject", hide: isLargeScreen },
+        { text: "Medium", propName: "", hide: isLargeScreen },
+        { text: "Description", propName: "", hide: isLargeScreen },
+        { text: "Artist", propName: "", hide: false },
+        { text: "User", propName: "", hide: false },
+        { text: "Operations", propName: "", hide: false },
+    ];
 
     const fetchPaintings = async (year: number) => {
         setLoading(true);
@@ -123,93 +142,206 @@ export const PaintingFilter = () => {
             </Container>
             {loading && <div>Loading...</div>}
             {!loading && paintings.length === 0 && <div>No paintings found after the given year.</div>}
-            {!loading && paintings.length > 0 && (
-				<TableContainer component={Paper}>
-					<Table sx={{ minWidth: 650 }} aria-label="simple table">
-						<TableHead>
-							<TableRow>
-								<TableCell>#</TableCell>
-								<TableCell align="left" style= {{whiteSpace: "nowrap"}}>Title</TableCell>
-                                <TableCell align="left" style= {{whiteSpace: "nowrap"}}>Creation year</TableCell>
-								<TableCell align="left">Height</TableCell>
-								<TableCell align="left">Subject</TableCell>
-								<TableCell align="left">Medium</TableCell>
-								<TableCell align="left">Description</TableCell>
-                                <TableCell align="left">Artist</TableCell>
-                                <TableCell align="center">Operations</TableCell>
-							</TableRow>
-						</TableHead>
-						<TableBody>
-							{paintings.map((painting, index) => (
-								<TableRow key={painting.id}>
-									<TableCell component="th" scope="row">
-										{index + 1}
-									</TableCell>
-									<TableCell component="th" scope="row">
-										<Link to={`/paintings/${painting.id}/details`} title="View painting details">
-											{painting.title}
-										</Link>
-									</TableCell>
-									<TableCell align="left">{painting.creationYear}</TableCell>
-								    <TableCell align="left">{painting.height}</TableCell>
-								    <TableCell align="left">{painting.subject}</TableCell>
-								    <TableCell align="left">{painting.medium}</TableCell>
-                                    <TableCell align="left">{painting.description}</TableCell>
-									<TableCell align="left">{painting.artist?.firstName + " " + painting.artist?.lastName}</TableCell>
-                                    <TableCell align="center">
-										<IconButton
+            {!loading && paintings.length > 0 && (isMediumScreen ? (
+                    <Grid container spacing={3}>
+                        {paintings.map((painting, index) => (
+                            <Grid item xs={12} sm={6} md={4} key={painting.id}>
+                                <Card>
+                                    <CardContent>
+                                        <Typography
+                                            variant="h6"
+                                            component="div"
+                                        >
+                                            {painting.title}
+                                        </Typography>
+                                        <Typography color="text.secondary">
+                                            {"Artist: "}
+                                            {painting.artist?.firstName + " " + painting.artist?.lastName ??"Unknown"}
+                                        </Typography>
+                                        <Typography color="text.secondary">
+                                            Year: {painting.creationYear}
+                                        </Typography>
+                                        <Typography color="text.secondary">
+                                            Height:{" "}
+                                            {painting.height}
+                                        </Typography>
+                                    </CardContent>
+                                    <CardActions>
+                                        <IconButton
                                             component={Link}
-                                            to={`/paintings/${painting.id}/details`}>
-                                            <Tooltip title="View painting details" arrow>
+                                            to={`/paintings/${painting.id}/details`}
+                                        >
+                                            <Tooltip
+                                                title="View painting details"
+                                                arrow
+                                            >
                                                 <ReadMoreIcon color="primary" />
                                             </Tooltip>
                                         </IconButton>
-    
-                                        <IconButton 
-                                            component={Link} 
-                                            sx={{ ml: 1, mr: 1 }} 
-                                            to={`/paintings/${painting.id}/edit`}  
+                                        <IconButton
+                                            component={Link}
+                                            sx={{ ml: 1, mr: 1 }}
+                                            to={`/paintings/${painting.id}/edit`}
                                             disabled={
-                                                    !isAuthorized(
-                                                        painting.user?.id
-                                                    )
-                                                }>
+                                                !isAuthorized(painting.user?.id)
+                                            }
+                                        >
                                             <Tooltip
-                                                    title="Edit painting"
-                                                    arrow
-                                                >    
-                                            <EditIcon />
-                                            </Tooltip>    
+                                                title="Edit painting"
+                                                arrow
+                                            >
+                                                <EditIcon />
+                                            </Tooltip>
                                         </IconButton>
-    
-                                        <IconButton 
-                                            component={Link} 
+                                        <IconButton
+                                            component={Link}
                                             to={`/paintings/${painting.id}/delete`}
                                             disabled={
-                                                !isAuthorized(
-                                                    painting.user?.id
-                                                )
+                                                !isAuthorized(painting.user?.id)
                                             }
                                             sx={{
                                                 color: "red",
                                             }}
-                                            >
+                                        >
                                             <Tooltip
+                                                title="Delete painting"
+                                                arrow
+                                            >
+                                                <DeleteForeverIcon />
+                                            </Tooltip>
+                                        </IconButton>
+                                    </CardActions>
+                                </Card>
+                            </Grid>
+                        ))}
+                    </Grid>
+                ) : (
+                    <TableContainer component={Paper}>
+                        <Table sx={{ minWidth: 0 }} aria-label="simple table">
+                            <TableHead>
+                                <TableRow>
+                                    {headers.map((header, i) => {
+                                        if (header.hide) {
+                                            return null;
+                                        }
+                                        return (
+                                            <TableCell
+                                                key={i}
+                                                style={{ userSelect: "none" }}
+                                                align={
+                                                    header.text === "Operations"
+                                                        ? "center"
+                                                        : "left"
+                                                }
+                                            >
+                                                {header.text}
+                                            </TableCell>
+                                        );
+                                    })}
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {paintings.map((painting, index) => {
+                                    const paintingData = [
+                                        index + 1,
+                                        painting.name,
+                                        painting.creationYear,
+                                        painting.height,
+                                        painting.subject,
+                                        painting.medium,
+                                        painting.description,
+                                        painting.artist?.firstName + ' ' + painting.artist?.lastName ??
+                                            "Unknown",
+                                        painting.user?.name ? (
+                                            <Link
+                                                to={`/users/${painting.user?.id}/details`}
+                                                title="View user details"
+                                            >
+                                                {painting.user?.name}
+                                            </Link>
+                                        ) : (
+                                            <p>N/A</p>
+                                        ),
+                                        <Box
+                                            display="flex"
+                                            alignItems="flex-start"
+                                            justifyContent="center"
+                                        >
+                                            <IconButton
+                                                component={Link}
+                                                to={`/paintings/${painting.id}/details`}
+                                            >
+                                                <Tooltip
+                                                    title="View painting details"
+                                                    arrow
+                                                >
+                                                    <ReadMoreIcon color="primary" />
+                                                </Tooltip>
+                                            </IconButton>
+                                            <IconButton
+                                                component={Link}
+                                                sx={{ ml: 1, mr: 1 }}
+                                                to={`/paintings/${painting.id}/edit`}
+                                                disabled={
+                                                    !isAuthorized(
+                                                        painting.user?.id
+                                                    )
+                                                }
+                                            >
+                                                <Tooltip
+                                                    title="Edit painting"
+                                                    arrow
+                                                >
+                                                    <EditIcon />
+                                                </Tooltip>
+                                            </IconButton>
+                                            <IconButton
+                                                component={Link}
+                                                to={`/paintings/${painting.id}/delete`}
+                                                disabled={
+                                                    !isAuthorized(
+                                                        painting.user?.id
+                                                    )
+                                                }
+                                                sx={{ color: "red" }}
+                                            >
+                                                <Tooltip
                                                     title="Delete painting"
                                                     arrow
                                                 >
-                                            <DeleteForeverIcon/>
-                                            </Tooltip>
-                                        </IconButton>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
-            )}
-            
+                                                    <DeleteForeverIcon />
+                                                </Tooltip>
+                                            </IconButton>
+                                        </Box>,
+                                    ];
+                                    return (
+                                        <TableRow key={painting.id}>
+                                            {paintingData.map((data, i) => {
+                                                const header = headers[i];
+                                                if (header.hide) {
+                                                    return null;
+                                                }
+                                                return (
+                                                    <TableCell
+                                                        key={i}
+                                                        align={
+                                                            header.text ===
+                                                            "Operations"
+                                                                ? "center"
+                                                                : "left"
+                                                        }
+                                                    >
+                                                        {data}
+                                                    </TableCell>
+                                                );
+                                            })}
+                                        </TableRow>
+                                    );
+                                })}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
+                ))}
         </Container>
     );
 };
-    

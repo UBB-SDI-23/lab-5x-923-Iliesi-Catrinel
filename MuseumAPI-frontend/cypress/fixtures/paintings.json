@@ -1,0 +1,34 @@
+[ 
+  {
+    "id": 1,
+    "title": "title 1",
+    "creationYear": 2000,
+    "height": 1,
+    "subject": "test subject 1",
+    "medium": "test medium 1",
+    "description": "test description 1",
+    "artistId": 1
+  },
+
+  {
+    "id": 2,
+    "title": "title 2",
+    "creationYear": 2000,
+    "height": 2,
+    "subject": "subject 2",
+    "medium": "test medium 2",
+    "description": "test description 2",
+    "artistId": 2
+  },
+  
+  {
+    "id": 3,
+    "title": "title 3",
+    "creationYear": 2000,
+    "height": 3,
+    "subject": "test subject 3",
+    "medium": "test medium 3",
+    "description": "test description 3",
+    "artistId": 3
+  }
+]

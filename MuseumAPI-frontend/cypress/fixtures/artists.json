@@ -1,0 +1,40 @@
+[
+    {
+      "id": 1,
+      "firstName": "test first name 1",
+      "lastName": "test last name 1",
+      "birthDate": "1999-01-01T00:00:00",
+      "birthPlace": "test birth place 1",
+      "education": "test education 1",
+      "movement": "test movement 1",
+      "paintings": [1],
+      "museums": [1],
+      "exhibitions": [2]
+  },
+
+  {
+    "id": 2,
+    "firstName": "test first name 2",
+    "lastName": "test last name 2",
+    "birthDate": "1999-01-01T00:00:00",
+    "birthPlace": "test birth place 2",
+    "education": "test education 2",
+    "movement": "test movement 2",
+    "paintings": [2],
+    "museums": [3],
+    "exhibitions": [2, 3]
+  },
+
+  {
+    "id": 3,
+    "firstName": "test first name 3",
+    "lastName": "test last name 3",
+    "birthDate": "1999-01-01T00:00:00",
+    "birthPlace": "test birth place 3",
+    "education": "test education 3",
+    "movement": "test movement 3",
+    "paintings": [3],
+    "museums": [1, 2, 3],
+    "exhibitions": [1, 2, 3]
+  }
+]

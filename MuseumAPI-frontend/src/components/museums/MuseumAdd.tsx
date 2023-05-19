@@ -5,7 +5,6 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import axios, { AxiosError, AxiosResponse } from "axios";
 import { BACKEND_API_URL } from "../../constants";
-import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Museum } from "../../models/Museum";
 import { SnackbarContext } from "../SnackbarContext";

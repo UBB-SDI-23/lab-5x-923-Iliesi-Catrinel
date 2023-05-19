@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from "react";
-import { Box, Button, CircularProgress, Container, IconButton, Pagination, Paper, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip} from "@mui/material";
+import { Box, Button, Card, CardActions, CardContent, CircularProgress, Container, Grid, IconButton, Pagination, Paper, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip, Typography, useMediaQuery, useTheme} from "@mui/material";
 import ReadMoreIcon from "@mui/icons-material/ReadMore";
 import { Link, useLocation } from "react-router-dom";
 import EditIcon from "@mui/icons-material/Edit";
@@ -10,6 +10,7 @@ import { BACKEND_API_URL, formatDate } from "../../constants";
 import { getAccount, getAuthToken, isAuthorized } from "../../auth";
 import axios, { AxiosError } from "axios";
 import { SnackbarContext } from "../SnackbarContext";
+import Paginator from "../Paginator";
 
 export const AllArtists = () => {
     const openSnackbar = useContext(SnackbarContext);
@@ -22,22 +23,23 @@ export const AllArtists = () => {
     const [pageSize, setPageSize] = useState(getAccount()?.userProfile?.pagePreference ?? 5);
 	const [totalPages, setTotalPages] = useState(999999);
 
-    const displayedPages = 9;
+    const theme = useTheme();
+    const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
+    const isMediumScreen = useMediaQuery(theme.breakpoints.down("md"));
+    const isLargeScreen = useMediaQuery(theme.breakpoints.down("lg"));
 
-    let startPage = pageIndex - Math.floor((displayedPages - 3) / 2) + 1;
-    let endPage = startPage + displayedPages - 3;
-
-    if (startPage <= 2) {
-        startPage = 1;
-        endPage = displayedPages - 1;
-    } else if (endPage >= totalPages - 1) {
-        startPage = totalPages - displayedPages + 2;
-        endPage = totalPages;
-    }
-
-    function handlePageClick(pageNumber: number) {
-        setPageIndex(pageNumber - 1);
-    }
+    const headers = [
+        { text: "#", hide: false },
+        { text: "First Name", hide: false },
+        { text: "Last Name", hide: false },
+        { text: "Birth Date", hide: isLargeScreen },
+        { text: "Birth Place", hide: isLargeScreen },
+        { text: "Education", hide: isLargeScreen },
+        { text: "Movement", hide: isLargeScreen },
+        { text: "# of Paintings", hide: false },
+        { text: "User", hide: false },
+        { text: "Operations", hide: false },
+    ];
 	
 	const fetchPageCount = async () => {
         try {
@@ -139,7 +141,7 @@ export const AllArtists = () => {
     }, [sorting]);
 
     return (
-		<Container>
+		<Container data-testid="test-all-artists-container">
 			<h1>All artists</h1>
 
 			{loading && <CircularProgress />}
@@ -151,188 +153,200 @@ export const AllArtists = () => {
 					</Tooltip>
 				</IconButton>
 			)}
-			{!loading && artists.length > 0 && (
-				<TableContainer component={Paper}>
-					<Table sx={{ minWidth: 650 }} aria-label="simple table">
-						<TableHead>
-							<TableRow>
-								<TableCell>#</TableCell>
-								<TableCell align="left" style= {{cursor: "pointer", whiteSpace: "nowrap"}} onClick={() => applySorting('firstName', !sorting.ascending)}>
-									First Name{sorting.key === "firstName" && (sorting.ascending ? ' ↑' : ' ↓')}</TableCell>
-                                <TableCell align="left" style={{whiteSpace: "nowrap", userSelect: "none"}}>Last Name</TableCell>
-								<TableCell align="left" style={{whiteSpace: "nowrap", userSelect: "none"}}>Birth Date</TableCell>
-								<TableCell align="left" style={{whiteSpace: "nowrap", userSelect: "none"}}>Birth Place</TableCell>
-								<TableCell align="left" style={{whiteSpace: "nowrap", userSelect: "none"}}>Education</TableCell>
-                                <TableCell align="left" style={{whiteSpace: "nowrap", userSelect: "none"}}>Movement</TableCell>
-								<TableCell align="left" style={{whiteSpace: "nowrap", userSelect: "none"}}># of Paintings</TableCell>
-								<TableCell align="left" style={{whiteSpace: "nowrap", userSelect: "none"}}>User</TableCell>
-								<TableCell align="center" style={{whiteSpace: "nowrap", userSelect: "none"}}>Operations</TableCell>
-							</TableRow>
-						</TableHead>
-						<TableBody>
-						{artists.map((artist, index) => (
-							<TableRow key={artist.id}>
-								<TableCell component="th" scope="row">
-									{ pageIndex * pageSize + index + 1}
-								</TableCell>
-								<TableCell component="th" scope="row">
-									<Link to={`/artists/${artist.id}/details`} title="View artist details">
-										{artist.firstName}
-									</Link>
-								</TableCell>
-								<TableCell component="th" scope="row">
-									<Link to={`/artists/${artist.id}/details`} title="View artist details">
-										{artist.lastName}
-									</Link>
-								</TableCell>
-								<TableCell align="left">{formatDate(artist.birthDate)}</TableCell>
-								<TableCell align="left">{artist.birthPlace}</TableCell>
-								<TableCell align="left">{artist.education}</TableCell>
-								<TableCell align="left">{artist.movement}</TableCell>
-								<TableCell align="left">{artist.paintings?.length}</TableCell>
-								<TableCell align="left">
-                                        <Link
-                                            to={`/users/${artist.user?.id}/details`}
-                                            title="View user details"
+			{!loading && artists.length > 0 && 
+				(isMediumScreen ? (
+                    <Grid container spacing={3}>
+                        {artists.map((artist, index) => (
+                            <Grid item xs={12} sm={6} md={4} key={artist.id}>
+                                <Card>
+                                    <CardContent>
+                                        <Typography
+                                            variant="h6"
+                                            component="div"
                                         >
-                                            {artist.user?.name}
-                                        </Link>
-								</TableCell>
-								<TableCell align="center">
-									<Box display="flex" alignItems="flex-start" justifyContent="center">
-										<IconButton
-											component={Link}
-											to={`/artists/${artist.id}/details`}
-										>
-											<Tooltip title="View artist details" arrow>
-												<ReadMoreIcon color="primary" />
-											</Tooltip>
-										</IconButton>
-										<IconButton
-											component={Link}
-											sx={{ ml: 1, mr: 1 }}
-											to={`/artists/${artist.id}/edit`}
+                                            {artist.firstName}
+                                        </Typography>
+                                        <Typography
+                                            variant="h6"
+                                            component="div"
+                                        >
+                                            {artist.lastName}
+                                        </Typography>
+                                        <Typography color="text.secondary">
+                                            {"# of Paintings: "}
+                                            {artist.paintings?.length}
+                                        </Typography>
+                                    </CardContent>
+                                    <CardActions>
+                                        <IconButton
+                                            component={Link}
+                                            to={`/artists/${artist.id}/details`}
+                                        >
+                                            <Tooltip
+                                                title="View artist details"
+                                                arrow
+                                            >
+                                                <ReadMoreIcon color="primary" />
+                                            </Tooltip>
+                                        </IconButton>
+                                        <IconButton
+                                            component={Link}
+                                            sx={{ ml: 1, mr: 1 }}
+                                            to={`/artists/${artist.id}/edit`}
                                             disabled={
                                                 !isAuthorized(artist.user?.id)
                                             }
-										>
-                                            <Tooltip
+                                        >
+                                            <Tooltip title="Edit artist" arrow>
+                                                <EditIcon />
+                                            </Tooltip>
+                                        </IconButton>
+                                        <IconButton
+                                            component={Link}
+                                            to={`/artists/${artist.id}/delete`}
+                                            disabled={
+                                                !isAuthorized(artist.user?.id)
+                                            }
+                                            sx={{ color: "red" }}
+                                        >
+                                            <Tooltip title="Delete artist" arrow>
+                                                <DeleteForeverIcon />
+                                            </Tooltip>
+                                        </IconButton>
+                                    </CardActions>
+                                </Card>
+                            </Grid>
+                        ))}
+                    </Grid>
+                ) : (
+                    <TableContainer component={Paper}>
+                        <Table sx={{ minWidth: 0 }} aria-label="simple table">
+                            <TableHead>
+                                <TableRow>
+                                    {headers.map((header, i) => {
+                                        if (header.hide) {
+                                            return null;
+                                        }
+                                        return (
+                                            <TableCell
+                                                key={i}
+                                                style={{ userSelect: "none" }}
+                                                align={
+                                                    header.text === "Operations"
+                                                        ? "center"
+                                                        : "left"
+                                                }
+                                            >
+                                                {header.text}
+                                            </TableCell>
+                                        );
+                                    })}
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {artists.map((artist, index) => {
+                                    const artistData = [
+                                        pageIndex * pageSize + index + 1,
+                                        artist.firstName,
+                                        artist.lastName,
+                                        artist.birthDate.toLocaleString(),
+                                        artist.birthPlace,
+                                        artist.education,
+                                        artist.movement,
+                                        artist.paintings?.length,
+                                        artist.user?.name ? (
+                                            <Link
+                                                to={`/users/${artist.user?.id}/details`}
+                                                title="View user details"
+                                            >
+                                                {artist.user?.name}
+                                            </Link>
+                                        ) : (
+                                            <p>N/A</p>
+                                        ),
+                                        <Box
+                                            display="flex"
+                                            alignItems="flex-start"
+                                            justifyContent="center"
+                                        >
+                                            <IconButton
+                                                component={Link}
+                                                to={`/artists/${artist.id}/details`}
+                                            >
+                                                <Tooltip
+                                                    title="View artist details"
+                                                    arrow
+                                                >
+                                                    <ReadMoreIcon color="primary" />
+                                                </Tooltip>
+                                            </IconButton>
+                                            <IconButton
+                                                component={Link}
+                                                sx={{ ml: 1, mr: 1 }}
+                                                to={`/artists/${artist.id}/edit`}
+                                                disabled={
+                                                    !isAuthorized(artist.user?.id)
+                                                }
+                                            >
+                                                <Tooltip
                                                     title="Edit artist"
                                                     arrow
-                                                ><EditIcon />
+                                                >
+                                                    <EditIcon />
                                                 </Tooltip>
-										</IconButton>
-										<IconButton
-											component={Link}
-											to={`/artists/${artist.id}/delete`}
-                                            disabled={
-                                                !isAuthorized(artist.user?.id)
-                                            }
-                                            sx={{
-                                                color: "red",
-                                            }}
-										>
-											<Tooltip
+                                            </IconButton>
+                                            <IconButton
+                                                component={Link}
+                                                to={`/artists/${artist.id}/delete`}
+                                                disabled={
+                                                    !isAuthorized(artist.user?.id)
+                                                }
+                                                sx={{ color: "red" }}
+                                            >
+                                                <Tooltip
                                                     title="Delete artist"
                                                     arrow
-                                                ><DeleteForeverIcon/>
+                                                >
+                                                    <DeleteForeverIcon />
                                                 </Tooltip>
-										</IconButton>
-									</Box>
-								</TableCell>
-							</TableRow>
-						))}
-
-						</TableBody>
-					</Table>
-				</TableContainer>
-			)}
-			{!loading && (
-                <div
-                    style={{
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center",
-                        marginTop: 16,
-                    }}
-                >
-                    <Button
-                        variant="contained"
-                        onClick={() =>
-                            setPageIndex((prevPageIndex) =>
-                                Math.max(prevPageIndex - 1, 0)
-                            )
-                        }
-                        disabled={pageIndex === 0}
-                    >
-                        &lt;
-                    </Button>
-                    {startPage > 1 && (
-                        <>
-                            <Button
-                                variant={
-                                    pageIndex === 0 ? "contained" : "outlined"
-                                }
-                                onClick={() => handlePageClick(1)}
-                                style={{
-                                    marginLeft: 8,
-                                    marginRight: 8,
-                                }}
-                            >
-                                1
-                            </Button>
-                            <span>...</span>
-                        </>
-                    )}
-                    {Array.from(
-                        { length: endPage - startPage + 1 },
-                        (_, i) => i + startPage
-                    ).map((number) => (
-                        <Button
-                            key={number}
-                            variant={
-                                pageIndex === number - 1
-                                    ? "contained"
-                                    : "outlined"
-                            }
-                            onClick={() => handlePageClick(number)}
-                            style={{
-                                marginLeft: 8,
-                                marginRight: 8,
-                            }}
-                        >
-                            {number}
-                        </Button>
-                    ))}
-                    {endPage < totalPages && (
-                        <>
-                            <span>...</span>
-                            <Button
-                                variant={
-                                    pageIndex === totalPages - 1
-                                        ? "contained"
-                                        : "outlined"
-                                }
-                                onClick={() => handlePageClick(totalPages)}
-                                style={{
-                                    marginLeft: 8,
-                                    marginRight: 8,
-                                }}
-                            >
-                                {totalPages}
-                            </Button>
-                        </>
-                    )}
-                    <Button
-                        variant="contained"
-                        onClick={() =>
-                            setPageIndex((prevPageIndex) => prevPageIndex + 1)
-                        }
-                        disabled={pageIndex + 1 >= totalPages}
-                    >
-                        &gt;
-                    </Button>
-                </div>
+                                            </IconButton>
+                                        </Box>,
+                                    ];
+                                    return (
+                                        <TableRow key={artist.id}>
+                                            {artistData.map((data, i) => {
+                                                const header = headers[i];
+                                                if (header.hide) {
+                                                    return null;
+                                                }
+                                                return (
+                                                    <TableCell
+                                                        key={i}
+                                                        align={
+                                                            header.text ===
+                                                            "Operations"
+                                                                ? "center"
+                                                                : "left"
+                                                        }
+                                                    >
+                                                        {data}
+                                                    </TableCell>
+                                                );
+                                            })}
+                                        </TableRow>
+                                    );
+                                })}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
+                ))}
+            {!loading && artists.length > 0 && (
+                <Paginator
+                    route="artists"
+                    pageSize={pageSize}
+                    pageIndex={pageIndex}
+                    setPageIndex={setPageIndex}
+                />
             )}
         </Container>
     );

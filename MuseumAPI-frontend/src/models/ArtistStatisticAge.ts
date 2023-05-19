@@ -1,4 +1,4 @@
-export interface ArtistStatistic {
+export interface ArtistStatisticAge {
     id: number;
     firstName: string;
     lastName: string;

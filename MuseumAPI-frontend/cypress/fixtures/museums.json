@@ -1,0 +1,34 @@
+[
+    {
+    "id": 1,
+    "name": "test name 1",
+    "address": "test address 1",
+    "foundationDate": "2000-01-31T00:00:00",
+    "architect": "test architect 1",
+    "website": "http://testurl1.net/",
+    "artists": [1],
+    "exhibitions": [1]
+    },
+
+    {
+        "id": 2,
+        "name": "test name 2",
+        "address": "test address 2",
+        "foundationDate": "2000-01-31T00:00:00",
+        "architect": "test architect 2",
+        "website": "http://testurl2.net/",
+        "artists": [2],
+        "exhibitions": [2]
+    },
+
+    {
+        "id": 3,
+        "name": "test name 3",
+        "address": "test address 3",
+        "foundationDate": "2000-01-31T00:00:00",
+        "architect": "test architect 3",
+        "website": "http://testurl3.net/",
+        "artists": [3],
+        "exhibitions": [3]
+    }
+]
