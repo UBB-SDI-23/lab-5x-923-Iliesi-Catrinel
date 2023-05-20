@@ -8,7 +8,7 @@ RUN dotnet restore
 
 # Copy the rest of the project files and build the app
 COPY . ./
-RUN dotnet publish -c Release -o out
+RUN dotnet publish MuseumAPI.csproj -c Release -o out
 
 # Use the official .NET 7 Runtime image as the final image
 FROM mcr.microsoft.com/dotnet/aspnet:7.0
