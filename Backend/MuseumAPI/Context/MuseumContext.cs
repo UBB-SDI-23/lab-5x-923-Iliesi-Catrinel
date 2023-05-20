@@ -12,7 +12,7 @@ namespace MuseumAPI.Context
             // EnsureDeleted to skip migrations
             // delete to keep data between runs
             //Database.EnsureDeleted();
-            Database.EnsureCreated();
+            //Database.EnsureCreated();
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
