@@ -71,8 +71,10 @@ namespace PaintingsAPI
                 };
             });
 
-
-            var connectionString = builder.Configuration.GetConnectionString("MuseumCS");
+            var connectionString = builder.Configuration.GetConnectionString("DockerMuseumDatabase");
+            #if DEBUG
+                connectionString = builder.Configuration.GetConnectionString("LocalMuseumDatabase");
+            #endif
 
             // add the database context to the DI container
             // and specify that the database context will use a sql server database
