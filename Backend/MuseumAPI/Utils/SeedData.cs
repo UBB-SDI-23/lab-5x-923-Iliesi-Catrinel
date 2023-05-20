@@ -215,8 +215,6 @@ namespace MuseumAPI.Utils
         {
             using (var context = new MuseumContext(serviceProvider.GetRequiredService<DbContextOptions<MuseumContext>>()))
             {
-                return;
-
                 var logger = serviceProvider.GetRequiredService<ILogger<SeedDataLogger>>();
                 logger.LogInformation("Seeding process started at {time}", DateTimeOffset.UtcNow);
 

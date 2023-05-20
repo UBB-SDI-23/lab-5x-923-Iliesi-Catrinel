@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  museumapi:
+    build:
+      context: ../../Backend/MuseumAPI
+      dockerfile: ../../DevOps/Docker/Dockerfile.museumapi
+    container_name: museumapi
+    ports:
+      - 5133:5133
+    networks:
+      - museumnetwork
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://*:5133
+    depends_on:
+      - museumdb
+
+  museumdb:
+    build:
+      context: .
+      dockerfile: Dockerfile.museumdb
+    container_name: museumdb
+    ports:
+      - 1433:1433
+    networks:
+      - museumnetwork
+    volumes:
+      - /var/opt/mssql:/var/opt/mssql
+
+networks:
+  museumnetwork:
+    name: museumnetwork
+    driver: bridge

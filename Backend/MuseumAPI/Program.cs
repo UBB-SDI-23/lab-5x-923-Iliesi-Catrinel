@@ -72,9 +72,7 @@ namespace PaintingsAPI
             });
 
 
-            var connectionString = builder.Configuration.GetConnectionString("LocalMuseumCS");
-            if (string.IsNullOrEmpty(connectionString))
-                connectionString = builder.Configuration.GetConnectionString("MuseumCS");
+            var connectionString = builder.Configuration.GetConnectionString("MuseumCS");
 
             // add the database context to the DI container
             // and specify that the database context will use a sql server database
@@ -106,12 +104,28 @@ namespace PaintingsAPI
 
             var app = builder.Build();
 
-            // seed database
-            using (var scope = app.Services.CreateScope())
+            int retryCount = 0;
+            while (retryCount < 6)
             {
-                var context = scope.ServiceProvider.GetService<MuseumContext>();
-                //context.Database.Migrate();
-                SeedData.InitializeAsync(scope.ServiceProvider).Wait();
+                try
+                {
+                    using (var scope = app.Services.CreateScope())
+                    {
+                        var context = scope.ServiceProvider.GetService<MuseumContext>();
+                        context!.Database.Migrate();
+                        SeedData.InitializeAsync(scope.ServiceProvider).Wait();
+                    }
+
+                    break;
+                }
+                catch (Exception)
+                {
+                    retryCount++;
+                    if (retryCount >= 6)
+                        throw;
+
+                    Thread.Sleep(10000);
+                }
             }
 
             app.UseSwagger();

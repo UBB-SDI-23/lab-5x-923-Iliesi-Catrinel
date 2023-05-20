@@ -1,11 +1,2 @@
-
-SQLHelper/artists.csv
-SQLHelper/artists_new.csv
-SQLHelper/exhibitions.csv
-SQLHelper/generate.py
-SQLHelper/main.sql
-SQLHelper/museums.csv
-SQLHelper/paintings.csv
-SQLHelper/paintings_new.csv
-SQLHelper/user_profiles.csv
-SQLHelper/users.csv
+# .gitignore
+DevOps/SQLHelper/*.csv
