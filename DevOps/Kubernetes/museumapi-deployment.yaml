@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: museumapi-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: museumapi
+  template:
+    metadata:
+      labels:
+        app: museumapi
+    spec:
+      containers:
+        - name: museumapi
+          image: gcr.io/$PROJECT/museumapi:latest
+          ports:
+            - containerPort: 5000
