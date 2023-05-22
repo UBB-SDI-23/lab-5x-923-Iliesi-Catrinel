@@ -16,12 +16,12 @@ namespace MuseumAPI.Utils
         private class SeedDataLogger { }
         private const long STACK_OVERFLOW_LOOPS = 1_000_000;
 
-        private const int ARTISTS_COUNT = 1_000_0;
-        private const int PAINTINGS_COUNT = 1_000_0;
-        private const int MUSEUMS_COUNT = 1_000_0;
-        private const int EXHIBITIONS_COUNT = 10_000_0;
+        private const int ARTISTS_COUNT = 1_000;
+        private const int PAINTINGS_COUNT = 1_000;
+        private const int MUSEUMS_COUNT = 1_000;
+        private const int EXHIBITIONS_COUNT = 10_000;
 
-        private const int USERS_COUNT = 10_0;
+        private const int USERS_COUNT = 100;
         private static readonly string PASSWORD = UsersController.HashPassword("a");
         private const AccessLevel ACCESS_LEVEL = AccessLevel.Regular;
         private const long PAGE_PREFERENCE = 5;
