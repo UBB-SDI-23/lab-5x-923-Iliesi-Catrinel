@@ -11,6 +11,7 @@ using MuseumAPI.Services;
 using MuseumAPI.Validation;
 using System.Text;
 using System.Text.Json.Serialization;
+using MuseumAPI.Middleware;
 
 namespace PaintingsAPI
 {
@@ -31,7 +32,7 @@ namespace PaintingsAPI
             });
 
             // add services to the container
-            //builder.Services.AddControllers().AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+            // builder.Services.AddControllers().AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
             // builder.Services.AddControllers();
 
             //builder.Services.AddControllers().AddNewtonsoftJson(options => options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
@@ -143,6 +144,9 @@ namespace PaintingsAPI
             
             app.UseCors();
             app.UseAuthorization();
+
+            app.UseWebSockets();
+            app.Map("/api/chat", x => x.UseMiddleware<ChatMiddleware>());
 
             app.MapControllers();
             app.Run();

@@ -1,0 +1,3 @@
+timeStamp,elapsed,label,responseCode,responseMessage,threadName,dataType,success,failureMessage,bytes,sentBytes,grpThreads,allThreads,URL,Latency,IdleTime,Connect
+1684823365701,8868,HTTP Request,Non HTTP response code: java.net.SocketException,Non HTTP response message: Socket closed,jp@gc - Ultimate Thread Group 1-1,text,false,,2228,0,2,2,http://museumapi.duckdns.org:5133/api/artists/0/100,0,0,8868
+1684823365701,8928,HTTP Request,Non HTTP response code: java.net.SocketException,Non HTTP response message: Socket closed,jp@gc - Ultimate Thread Group 1-2,text,false,,2228,0,3,3,http://museumapi.duckdns.org:5133/api/artists/0/100,0,0,8928

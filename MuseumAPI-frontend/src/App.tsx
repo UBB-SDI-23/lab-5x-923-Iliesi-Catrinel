@@ -42,6 +42,8 @@ import { AllUsers } from "./components/users/AllUsers";
 import { UserAdd } from "./components/users/UserAdd";
 import { UserDelete } from "./components/users/UserDelete";
 import { UserUpdate } from "./components/users/UserUpdate";
+import { Chat } from "./components/Chat";
+
 
 const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(
     props,
@@ -94,6 +96,7 @@ function App() {
 
 					<Routes>
 						<Route path="/" element={<AppHome />} />
+						<Route path="/chat" element={<Chat />} />
 
 						<Route path="/users/:userId/details" element={<UserDetails />}/>
                         <Route path="/users/register" element={<UserRegister />}/>

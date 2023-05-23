@@ -15,6 +15,7 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import MenuIcon from '@mui/icons-material/Menu';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import { AccessLevel } from "../models/User";
+import ChatIcon from "@mui/icons-material/Chat";
 
 
 export const AppMenu = () => {
@@ -63,6 +64,7 @@ export const AppMenu = () => {
 		{ link: "/exhibitions", title: "Exhibitions", icon: <ArtTrackIcon /> },
 		{ link: "/agereport", title: "Age Report", icon: <TodayIcon /> },
 		{ link: "/heightreport", title: "Height Report", icon: <HeightIcon /> },
+        { link: "/chat", title: "Chat", icon: <ChatIcon /> },
     ];
 
 	return (

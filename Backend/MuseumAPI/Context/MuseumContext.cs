@@ -108,6 +108,8 @@ namespace MuseumAPI.Context
 
         public virtual DbSet<ConfirmationCode> ConfirmationCodes { get; set; } = null!;
 
+        public virtual DbSet<ChatMessage> ChatMessages { get; set; } = null!;
+
         public virtual DbSet<User> Users { get; set; } = null!;
         public virtual DbSet<UserProfile> UserProfiles { get; set; } = null!;
 
