@@ -20,6 +20,11 @@ namespace MuseumAPI.Context
             base.OnModelCreating(modelBuilder);
 
             // Set PagePreference default value to 5
+            modelBuilder.Entity<Painting>()
+                .Property(p => p.Price)
+                .HasDefaultValue(1000.00);
+
+            // Set PagePreference default value to 5
             modelBuilder.Entity<UserProfile>()
                 .Property(p => p.PagePreference)
                 .HasDefaultValue(5);

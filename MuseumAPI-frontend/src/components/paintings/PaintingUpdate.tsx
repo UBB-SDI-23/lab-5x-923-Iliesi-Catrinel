@@ -36,6 +36,7 @@ export const PaintingUpdate = () => {
         subject: "",
         medium: "",
         description: "",
+        price: 0.0,
         artistId: 0,
         artist : {} as Artist
     });
@@ -82,6 +83,7 @@ export const PaintingUpdate = () => {
                 subject: painting.subject,
                 medium: painting.medium,
                 description: painting.description,
+                price: painting.price,
                 artistId: painting.artistId,
             });
 
@@ -250,6 +252,20 @@ export const PaintingUpdate = () => {
                             sx={{ mb: 2 }}
                             onChange={(event) =>
                                 setPainting({ ...painting, description: event.target.value })
+                            }
+                        />
+                        <TextField
+                            id="price"
+                            label="Price"
+                            value={painting.price}
+                            variant="outlined"
+                            fullWidth
+                            sx={{ mb: 2 }}
+                            onChange={(event) =>
+                                setPainting({
+                                    ...painting,
+                                    price: parseFloat(event.target.value),
+                                })
                             }
                         />
                         <Autocomplete

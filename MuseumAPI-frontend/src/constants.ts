@@ -1,7 +1,7 @@
 const PROD_BACKEND_API_URL = "https://museumapi.ddns.net/api";  // production
-const DEV_BACKEND_API_URL = "http://localhost:5133/api";
-//const DEV_BACKEND_API_URL = "https://museumapi.ddns.net/api";                 // development
-//const DEV_BACKEND_API_URL = "http://museumapi.duckdns.org/api"; 
+const DEV_BACKEND_API_URL = "http://localhost:5133/api";        // development
+//const DEV_BACKEND_API_URL = "https://museumapi.ddns.net/api"; // development
+//const DEV_BACKEND_API_URL = "http://museumapi.duckdns.org/api"; // development
 
 export const BACKEND_API_URL =
 	process.env.NODE_ENV === "development" ? DEV_BACKEND_API_URL : PROD_BACKEND_API_URL;

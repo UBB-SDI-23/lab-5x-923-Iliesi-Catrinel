@@ -75,6 +75,7 @@ export const PaintingDetails = () => {
                         <p>Subject: {painting?.subject}</p>
                         <p>Medium: {painting?.medium}</p>
                         <p>Description: {painting?.description}</p>
+                        <p>Price: {painting?.price}</p>
                         <p>Artist:</p>
                         <div style={{ marginLeft: "24px" }}>
                             <p>Name: {painting?.artist?.firstName ?? "Unknown"} {painting?.artist?.lastName ?? ""}</p>

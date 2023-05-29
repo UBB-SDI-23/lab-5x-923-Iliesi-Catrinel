@@ -35,6 +35,7 @@ export const AllPaintings = () => {
         { text: "Subject", propName: "subject", hide: isLargeScreen },
         { text: "Medium", propName: "", hide: isLargeScreen },
         { text: "Description", propName: "", hide: isLargeScreen },
+        { text: "Price", propName: "price", hide: false },
         { text: "Artist", propName: "", hide: false },
         { text: "User", propName: "", hide: false },
         { text: "Operations", propName: "", hide: false },
@@ -166,15 +167,19 @@ export const AllPaintings = () => {
                                             {painting.title}
                                         </Typography>
                                         <Typography color="text.secondary">
-                                            {"Artist: "}
-                                            {painting.artist?.firstName + " " + painting.artist?.lastName ??"Unknown"}
-                                        </Typography>
-                                        <Typography color="text.secondary">
                                             Year: {painting.creationYear}
                                         </Typography>
                                         <Typography color="text.secondary">
                                             Height:{" "}
                                             {painting.height}
+                                        </Typography>
+                                        <Typography color="text.secondary">
+                                            Price:{" "}
+                                            {painting.price}
+                                        </Typography>
+                                        <Typography color="text.secondary">
+                                            {"Artist: "}
+                                            {painting.artist?.firstName + " " + painting.artist?.lastName ??"Unknown"}
                                         </Typography>
                                     </CardContent>
                                     <CardActions>
@@ -284,6 +289,7 @@ export const AllPaintings = () => {
                                         painting.subject,
                                         painting.medium,
                                         painting.description,
+                                        painting.price,
                                         painting.artist?.firstName + ' ' + painting.artist?.lastName ??
                                             "Unknown",
                                         painting.user?.name ? (

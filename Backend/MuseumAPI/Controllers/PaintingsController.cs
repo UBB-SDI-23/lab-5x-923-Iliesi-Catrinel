@@ -150,6 +150,7 @@ namespace MuseumAPI.Controllers
             painting.Subject = paintingDTO.Subject;
             painting.Medium = paintingDTO.Medium;
             painting.Description = paintingDTO.Description;
+            painting.Price = paintingDTO.Price;
 
             painting.ArtistId = paintingDTO.ArtistId;
             painting.Artist = artist;
@@ -208,6 +209,7 @@ namespace MuseumAPI.Controllers
                 Subject = paintingDTO.Subject,
                 Medium = paintingDTO.Medium,
                 Description = paintingDTO.Description,
+                Price = paintingDTO.Price,
 
                 ArtistId = paintingDTO.ArtistId,
                 Artist = artist,
@@ -283,6 +285,7 @@ namespace MuseumAPI.Controllers
                 Subject = painting.Subject,
                 Medium = painting.Medium,
                 Description = painting.Description,
+                Price = painting.Price,
 
                 ArtistId = painting.ArtistId,
             };

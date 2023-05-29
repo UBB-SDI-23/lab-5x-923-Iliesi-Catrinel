@@ -9,6 +9,7 @@ export interface Painting {
     subject: string;
     medium: string;
     description?: string;
+    price: number;
     artist?: Artist;
     artistId: number;
 

@@ -25,6 +25,7 @@ export const PaintingAdd = () => {
         subject: "",
         medium: "",
         description: "",
+        price: 0.0,
         artistId: 0
 	});
 
@@ -174,6 +175,14 @@ export const PaintingAdd = () => {
 							fullWidth
 							sx={{ mb: 2 }}
 							onChange={(event) => setPainting({ ...painting, description: event.target.value })}
+						/>
+                        <TextField
+							id="price"
+							label="Price"
+							variant="outlined"
+							fullWidth
+							sx={{ mb: 2 }}
+							onChange={(event) => setPainting({ ...painting, price: parseFloat(event.target.value) })}
 						/>
                         <Autocomplete
                             id="artistId"
