@@ -1,0 +1,413 @@
+﻿{
+  "Scenario": "Regression",
+  "DataSource": {
+    "Type": "TabularFile",
+    "Version": 1,
+    "FilePath": "D:\\Files\\GitHub\\University\\Systems for Design and Implementation\\lab-5x-923-Iliesi-Catrinel\\Backend\\MuseumAPI\\Machine Learning\\paintingsDataset.csv",
+    "Delimiter": ",",
+    "DecimalMarker": ".",
+    "HasHeader": true,
+    "ColumnProperties": [
+      {
+        "ColumnName": "creation_year",
+        "ColumnPurpose": "Feature",
+        "ColumnDataFormat": "Single",
+        "IsCategorical": false,
+        "Type": "Column",
+        "Version": 4
+      },
+      {
+        "ColumnName": "height",
+        "ColumnPurpose": "Feature",
+        "ColumnDataFormat": "Single",
+        "IsCategorical": false,
+        "Type": "Column",
+        "Version": 4
+      },
+      {
+        "ColumnName": "price",
+        "ColumnPurpose": "Label",
+        "ColumnDataFormat": "Single",
+        "IsCategorical": false,
+        "Type": "Column",
+        "Version": 4
+      }
+    ]
+  },
+  "Environment": {
+    "Type": "LocalCPU",
+    "Version": 1
+  },
+  "RunHistory": {
+    "Version": 3,
+    "Type": "Result",
+    "Trials": [
+      {
+        "Version": 1,
+        "Type": "Trial",
+        "TrainerName": "FastTreeRegression",
+        "Score": 0.9292672976205274,
+        "RuntimeInSeconds": 1.28,
+        "Parameter": {
+          "_SCHEMA_": "e0 * e1 * e2",
+          "e0": {
+            "OutputColumnNames": [
+              "creation_year",
+              "height"
+            ],
+            "InputColumnNames": [
+              "creation_year",
+              "height"
+            ]
+          },
+          "e1": {
+            "InputColumnNames": [
+              "creation_year",
+              "height"
+            ],
+            "OutputColumnName": "Features"
+          },
+          "e2": {
+            "NumberOfLeaves": 25,
+            "MinimumExampleCountPerLeaf": 25,
+            "NumberOfTrees": 4,
+            "MaximumBinCountPerFeature": 539,
+            "FeatureFraction": 0.78142285494987784,
+            "LearningRate": 0.99999977667298645,
+            "LabelColumnName": "price",
+            "FeatureColumnName": "Features"
+          },
+          "e3": {
+            "NumberOfTrees": 4,
+            "NumberOfLeaves": 4,
+            "FeatureFraction": 1.0,
+            "LabelColumnName": "price",
+            "FeatureColumnName": "Features"
+          },
+          "e4": {
+            "NumberOfLeaves": 4,
+            "MinimumExampleCountPerLeaf": 20,
+            "LearningRate": 1.0,
+            "NumberOfTrees": 4,
+            "SubsampleFraction": 1.0,
+            "MaximumBinCountPerFeature": 255,
+            "FeatureFraction": 1.0,
+            "L1Regularization": 2E-10,
+            "L2Regularization": 1.0,
+            "LabelColumnName": "price",
+            "FeatureColumnName": "Features"
+          },
+          "e5": {
+            "L1Regularization": 1.0,
+            "L2Regularization": 1.0,
+            "LabelColumnName": "price",
+            "FeatureColumnName": "Features"
+          },
+          "e6": {
+            "L1Regularization": 1.0,
+            "L2Regularization": 0.1,
+            "LabelColumnName": "price",
+            "FeatureColumnName": "Features"
+          }
+        }
+      },
+      {
+        "Version": 1,
+        "Type": "Trial",
+        "TrainerName": "LightGbmRegression",
+        "Score": 0.92923518236829494,
+        "RuntimeInSeconds": 12.305,
+        "Parameter": {
+          "_SCHEMA_": "e0 * e1 * e4",
+          "e0": {
+            "OutputColumnNames": [
+              "creation_year",
+              "height"
+            ],
+            "InputColumnNames": [
+              "creation_year",
+              "height"
+            ]
+          },
+          "e1": {
+            "InputColumnNames": [
+              "creation_year",
+              "height"
+            ],
+            "OutputColumnName": "Features"
+          },
+          "e4": {
+            "NumberOfLeaves": 4,
+            "MinimumExampleCountPerLeaf": 21,
+            "LearningRate": 0.32737393940631426,
+            "NumberOfTrees": 1023,
+            "SubsampleFraction": 0.99999977667298645,
+            "MaximumBinCountPerFeature": 337,
+            "FeatureFraction": 0.99999999,
+            "L1Regularization": 2.528681907086346E-10,
+            "L2Regularization": 0.99999977667298645,
+            "LabelColumnName": "price",
+            "FeatureColumnName": "Features"
+          },
+          "e2": {
+            "NumberOfLeaves": 4,
+            "MinimumExampleCountPerLeaf": 20,
+            "NumberOfTrees": 4,
+            "MaximumBinCountPerFeature": 255,
+            "FeatureFraction": 1.0,
+            "LearningRate": 0.099999999999999978,
+            "LabelColumnName": "price",
+            "FeatureColumnName": "Features"
+          },
+          "e3": {
+            "NumberOfTrees": 4,
+            "NumberOfLeaves": 4,
+            "FeatureFraction": 1.0,
+            "LabelColumnName": "price",
+            "FeatureColumnName": "Features"
+          },
+          "e5": {
+            "L1Regularization": 1.0,
+            "L2Regularization": 1.0,
+            "LabelColumnName": "price",
+            "FeatureColumnName": "Features"
+          },
+          "e6": {
+            "L1Regularization": 1.0,
+            "L2Regularization": 0.1,
+            "LabelColumnName": "price",
+            "FeatureColumnName": "Features"
+          }
+        }
+      },
+      {
+        "Version": 1,
+        "Type": "Trial",
+        "TrainerName": "FastTreeRegression",
+        "Score": 0.92921710684423919,
+        "RuntimeInSeconds": 1.613,
+        "Parameter": {
+          "_SCHEMA_": "e0 * e1 * e2",
+          "e0": {
+            "OutputColumnNames": [
+              "creation_year",
+              "height"
+            ],
+            "InputColumnNames": [
+              "creation_year",
+              "height"
+            ]
+          },
+          "e1": {
+            "InputColumnNames": [
+              "creation_year",
+              "height"
+            ],
+            "OutputColumnName": "Features"
+          },
+          "e2": {
+            "NumberOfLeaves": 21,
+            "MinimumExampleCountPerLeaf": 19,
+            "NumberOfTrees": 18,
+            "MaximumBinCountPerFeature": 1023,
+            "FeatureFraction": 0.988161240567748,
+            "LearningRate": 0.99999977667298645,
+            "LabelColumnName": "price",
+            "FeatureColumnName": "Features"
+          },
+          "e3": {
+            "NumberOfTrees": 4,
+            "NumberOfLeaves": 4,
+            "FeatureFraction": 1.0,
+            "LabelColumnName": "price",
+            "FeatureColumnName": "Features"
+          },
+          "e4": {
+            "NumberOfLeaves": 4,
+            "MinimumExampleCountPerLeaf": 20,
+            "LearningRate": 1.0,
+            "NumberOfTrees": 4,
+            "SubsampleFraction": 1.0,
+            "MaximumBinCountPerFeature": 255,
+            "FeatureFraction": 1.0,
+            "L1Regularization": 2E-10,
+            "L2Regularization": 1.0,
+            "LabelColumnName": "price",
+            "FeatureColumnName": "Features"
+          },
+          "e5": {
+            "L1Regularization": 1.0,
+            "L2Regularization": 1.0,
+            "LabelColumnName": "price",
+            "FeatureColumnName": "Features"
+          },
+          "e6": {
+            "L1Regularization": 1.0,
+            "L2Regularization": 0.1,
+            "LabelColumnName": "price",
+            "FeatureColumnName": "Features"
+          }
+        }
+      },
+      {
+        "Version": 1,
+        "Type": "Trial",
+        "TrainerName": "LightGbmRegression",
+        "Score": 0.92915505318053127,
+        "RuntimeInSeconds": 2.041,
+        "Parameter": {
+          "_SCHEMA_": "e0 * e1 * e4",
+          "e0": {
+            "OutputColumnNames": [
+              "creation_year",
+              "height"
+            ],
+            "InputColumnNames": [
+              "creation_year",
+              "height"
+            ]
+          },
+          "e1": {
+            "InputColumnNames": [
+              "creation_year",
+              "height"
+            ],
+            "OutputColumnName": "Features"
+          },
+          "e4": {
+            "NumberOfLeaves": 4,
+            "MinimumExampleCountPerLeaf": 20,
+            "LearningRate": 1.0,
+            "NumberOfTrees": 4,
+            "SubsampleFraction": 1.0,
+            "MaximumBinCountPerFeature": 254,
+            "FeatureFraction": 1.0,
+            "L1Regularization": 2E-10,
+            "L2Regularization": 1.0,
+            "LabelColumnName": "price",
+            "FeatureColumnName": "Features"
+          },
+          "e2": {
+            "NumberOfLeaves": 4,
+            "MinimumExampleCountPerLeaf": 20,
+            "NumberOfTrees": 4,
+            "MaximumBinCountPerFeature": 255,
+            "FeatureFraction": 1.0,
+            "LearningRate": 0.099999999999999978,
+            "LabelColumnName": "price",
+            "FeatureColumnName": "Features"
+          },
+          "e3": {
+            "NumberOfTrees": 4,
+            "NumberOfLeaves": 4,
+            "FeatureFraction": 1.0,
+            "LabelColumnName": "price",
+            "FeatureColumnName": "Features"
+          },
+          "e5": {
+            "L1Regularization": 1.0,
+            "L2Regularization": 1.0,
+            "LabelColumnName": "price",
+            "FeatureColumnName": "Features"
+          },
+          "e6": {
+            "L1Regularization": 1.0,
+            "L2Regularization": 0.1,
+            "LabelColumnName": "price",
+            "FeatureColumnName": "Features"
+          }
+        }
+      },
+      {
+        "Version": 1,
+        "Type": "Trial",
+        "TrainerName": "FastTreeRegression",
+        "Score": 0.92914654304437627,
+        "RuntimeInSeconds": 1.357,
+        "Parameter": {
+          "_SCHEMA_": "e0 * e1 * e2",
+          "e0": {
+            "OutputColumnNames": [
+              "creation_year",
+              "height"
+            ],
+            "InputColumnNames": [
+              "creation_year",
+              "height"
+            ]
+          },
+          "e1": {
+            "InputColumnNames": [
+              "creation_year",
+              "height"
+            ],
+            "OutputColumnName": "Features"
+          },
+          "e2": {
+            "NumberOfLeaves": 4,
+            "MinimumExampleCountPerLeaf": 89,
+            "NumberOfTrees": 14,
+            "MaximumBinCountPerFeature": 328,
+            "FeatureFraction": 0.57633492538927522,
+            "LearningRate": 0.83772656056326456,
+            "LabelColumnName": "price",
+            "FeatureColumnName": "Features"
+          },
+          "e3": {
+            "NumberOfTrees": 4,
+            "NumberOfLeaves": 4,
+            "FeatureFraction": 1.0,
+            "LabelColumnName": "price",
+            "FeatureColumnName": "Features"
+          },
+          "e4": {
+            "NumberOfLeaves": 4,
+            "MinimumExampleCountPerLeaf": 20,
+            "LearningRate": 1.0,
+            "NumberOfTrees": 4,
+            "SubsampleFraction": 1.0,
+            "MaximumBinCountPerFeature": 255,
+            "FeatureFraction": 1.0,
+            "L1Regularization": 2E-10,
+            "L2Regularization": 1.0,
+            "LabelColumnName": "price",
+            "FeatureColumnName": "Features"
+          },
+          "e5": {
+            "L1Regularization": 1.0,
+            "L2Regularization": 1.0,
+            "LabelColumnName": "price",
+            "FeatureColumnName": "Features"
+          },
+          "e6": {
+            "L1Regularization": 1.0,
+            "L2Regularization": 0.1,
+            "LabelColumnName": "price",
+            "FeatureColumnName": "Features"
+          }
+        }
+      }
+    ],
+    "Estimators": {
+      "e0": "ReplaceMissingValues",
+      "e1": "Concatenate",
+      "e2": "FastTreeRegression",
+      "e3": "FastForestRegression",
+      "e4": "LightGbmRegression",
+      "e5": "LbfgsPoissonRegressionRegression",
+      "e6": "SdcaRegression"
+    },
+    "Schema": "e0 * e1 * (e2 + e3 + e4 + e5 + e6)",
+    "MetricName": "RSquared",
+    "ModelFilePath": "D:\\Files\\GitHub\\University\\Systems for Design and Implementation\\lab-5x-923-Iliesi-Catrinel\\Backend\\MuseumAPI\\Machine Learning\\PaintingMLModel.mlnet"
+  },
+  "Type": "TrainingConfig",
+  "Version": 4,
+  "TrainingOption": {
+    "Version": 0,
+    "Type": "RegressionTrainingOption",
+    "TrainingTime": 600,
+    "LabelColumn": "price",
+    "Seed": 0
+  }
+}

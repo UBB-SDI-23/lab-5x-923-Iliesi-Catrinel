@@ -1,17 +1,17 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using MuseumAPI.Context;
 using MuseumAPI.Models;
 using MuseumAPI.Utils;
 using MuseumAPI.Services;
-using MuseumAPI.Validation;
 using System.Text;
 using System.Text.Json.Serialization;
 using MuseumAPI.Middleware;
+using Microsoft.Extensions.ML;
+using Microsoft.OpenApi.Models;
 
 namespace PaintingsAPI
 {
@@ -20,6 +20,9 @@ namespace PaintingsAPI
         static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+
+            builder.Services.AddPredictionEnginePool<PaintingMLModel.ModelInput, PaintingMLModel.ModelOutput>()
+                .FromFile("PaintingMLModel.mlnet");
 
             builder.Services.AddCors(options =>
             {

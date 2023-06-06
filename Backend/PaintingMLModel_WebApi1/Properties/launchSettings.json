@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "PaintingMLModel_WebApi1": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:52352;http://localhost:52353"
+    }
+  }
+}

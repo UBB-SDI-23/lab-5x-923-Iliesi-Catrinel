@@ -86,8 +86,10 @@ namespace MuseumAPI.Utils
 
         public static async Task SeedArtistsAsync(MuseumContext context, int n, long? userId = null)
         {
+            var random = new Random();
+
             var userIds = await context.Users.Select(u => u.Id).ToListAsync();
-            var randomUserId = new Func<long>(() => userIds[new Random().Next(userIds.Count)]);
+            long RandomUserId() => userIds[random.Next(userIds.Count)];
 
             var faker = new Faker<Artist>()
                 .RuleFor(e => e.FirstName, f => f.Name.FirstName())
@@ -96,9 +98,14 @@ namespace MuseumAPI.Utils
                 .RuleFor(e => e.BirthPlace, f => f.Address.City())
                 .RuleFor(e => e.Education, f => f.PickRandom(UNIVERSITIES))
                 .RuleFor(e => e.Movement, f => f.PickRandom(MOVEMENTS))
-                .RuleFor(er => er.UserId, userId == null ? randomUserId() : userId);
+                .RuleFor(er => er.UserId, userId ?? RandomUserId());
 
             var artists = faker.Generate(n);
+
+            foreach (var artist in artists)
+            {
+                artist.UserId =  RandomUserId();
+            }
 
             await context.Artists.AddRangeAsync(artists);
             await context.SaveChangesAsync();
@@ -106,11 +113,13 @@ namespace MuseumAPI.Utils
 
         public static async Task SeedPaintingsAsync(MuseumContext context, int n, long? userId = null)
         {
-            var artistIds = await context.Artists.Select(er => er.Id).ToListAsync();
-            var randomArtistId = new Func<long>(() => artistIds[new Random().Next(artistIds.Count)]);
+            var random = new Random();
+
+            var artistIds = await context.Artists.Select(a => a.Id).ToListAsync();
+            long RandomArtistId() => artistIds[random.Next(artistIds.Count)];
 
             var userIds = await context.Users.Select(u => u.Id).ToListAsync();
-            var randomUserId = new Func<long>(() => userIds[new Random().Next(userIds.Count)]);
+            long RandomUserId() => userIds[random.Next(userIds.Count)];
 
             var faker = new Faker<Painting>()
                 .RuleFor(e => e.Title, f => $"{f.PickRandom(DESCRIPTIVE_WORDS)} {f.Random.Word()} {f.Random.Word()}")
@@ -119,19 +128,26 @@ namespace MuseumAPI.Utils
                 .RuleFor(e => e.Subject, f => f.PickRandom(SUBJECTS))
                 .RuleFor(e => e.Medium, f => f.PickRandom(MEDIUMS))
                 .RuleFor(e => e.Description, f => string.Join("\n\n", f.Lorem.Paragraphs(2)))
-                .RuleFor(e => e.ArtistId, randomArtistId())
-                .RuleFor(e => e.UserId, userId == null ? randomUserId() : userId);
+                .RuleFor(e => e.ArtistId, RandomArtistId())
+                .RuleFor(e => e.UserId, userId ?? RandomUserId());
 
-            var employees = faker.Generate(n);
+            var paintings = faker.Generate(n);
 
-            await context.Paintings.AddRangeAsync(employees);
+            foreach (var painting in paintings)
+            {
+                painting.UserId = RandomUserId();
+            }
+
+            await context.Paintings.AddRangeAsync(paintings);
             await context.SaveChangesAsync();
         }
 
         public static async Task SeedMuseumsAsync(MuseumContext context, int n, long? userId = null)
-        { 
+        {
+            var random = new Random();
+
             var userIds = await context.Users.Select(u => u.Id).ToListAsync();
-            var randomUserId = new Func<long>(() => userIds[new Random().Next(userIds.Count)]);
+            long RandomUserId() => userIds[random.Next(userIds.Count)];
 
             var faker = new Faker<Museum>()
                 .RuleFor(s => s.Name, f => $"{f.Company.CompanyName()} Museum")
@@ -139,9 +155,14 @@ namespace MuseumAPI.Utils
                 .RuleFor(s => s.FoundationDate, f => f.Date.Between(DateTime.Now.AddYears(-50), DateTime.Now))
                 .RuleFor(s => s.Architect, f => $"{f.Name.FirstName()} {f.Name.LastName()}")
                 .RuleFor(s => s.Website, f => f.Internet.Url())
-                .RuleFor(s => s.UserId, userId == null ? randomUserId() : userId);
+                .RuleFor(s => s.UserId, userId ?? RandomUserId());
 
             var museums = faker.Generate(n);
+
+            foreach (var museum in museums)
+            {
+                museum.UserId = RandomUserId();
+            }
 
             await context.Museums.AddRangeAsync(museums);
             await context.SaveChangesAsync();
@@ -153,10 +174,28 @@ namespace MuseumAPI.Utils
             public long MuseumId { get; set; }
         }
 
+        private class ArtistMuseumPairComparer : IEqualityComparer<ArtistMuseumPair>
+        {
+            public bool Equals(ArtistMuseumPair? x, ArtistMuseumPair? y)
+            {
+                if (ReferenceEquals(x, y)) return true;
+                if (x is null || y is null) return false;
+
+                return x.ArtistId == y.ArtistId && x.MuseumId == y.MuseumId;
+            }
+
+            public int GetHashCode(ArtistMuseumPair obj)
+            {
+                return HashCode.Combine(obj.ArtistId, obj.MuseumId);
+            }
+        }
+
         public static async Task SeedExhibitionsAsync(MuseumContext context, int n, long? userId = null)
         {
+            var random = new Random();
+
             var userIds = await context.Users.Select(u => u.Id).ToListAsync();
-            var randomUserId = new Func<long>(() => userIds[new Random().Next(userIds.Count)]);
+            long RandomUserId() => userIds[random.Next(userIds.Count)];
 
             var artistIds = await context.Artists.Select(s => s.Id).ToListAsync();
             var museumIds = await context.Museums.Select(e => e.Id).ToListAsync();
@@ -165,42 +204,35 @@ namespace MuseumAPI.Utils
             var faker = new Faker<Exhibition>()
                 .RuleFor(ss => ss.StartDate, f => f.Date.Between(DateTime.Now.AddYears(-10), DateTime.Now))
                 .RuleFor(ss => ss.EndDate, (f, ss) => f.Date.Between(ss.StartDate, DateTime.Now))
-                .RuleFor(ss => ss.UserId, userId == null ? randomUserId() : userId);
+                .RuleFor(ss => ss.UserId, userId ?? RandomUserId());
 
-            // store generated artist and museum ID pairs in a list
-            // to prevent duplicate exhibitions
-            var artistMuseumPairs = new List<ArtistMuseumPair>();
+            var artistMuseumPairs = new HashSet<ArtistMuseumPair>(new ArtistMuseumPairComparer());
+            artistMuseumPairs.UnionWith(await context.Exhibitions.Select(am => new ArtistMuseumPair { ArtistId = am.ArtistId, MuseumId = am.MuseumId }).ToListAsync());
 
-            // Add all existing exhibitions to the pairs list
-            artistMuseumPairs.AddRange(await context.Exhibitions.Select(ss => new ArtistMuseumPair { ArtistId = ss.ArtistId, MuseumId = ss.MuseumId }).ToListAsync());
-
-            // define lambda for random pair of artist and museum that checks for duplicates
-            var randomArtistMuseumPair = new Func<ArtistMuseumPair>(() =>
+            ArtistMuseumPair RandomArtistMuseumPair()
             {
-                var artistid = artistIds[new Random().Next(artistIds.Count)];
-                var museumId = museumIds[new Random().Next(museumIds.Count)];
+                long artistId;
+                long museumId;
+                var pair = new ArtistMuseumPair();
 
-                long current = 0;
-                while (artistMuseumPairs.Any(p => p.ArtistId == artistid && p.MuseumId == museumId))
+                do
                 {
-                    if (current++ > STACK_OVERFLOW_LOOPS)
-                        throw new Exception("Could not find a unique pair of artist and museum.");
+                    artistId = artistIds[random.Next(artistIds.Count)];
+                    museumId = museumIds[random.Next(museumIds.Count)];
 
-                    artistid = artistIds[new Random().Next(artistIds.Count)];
-                    museumId = museumIds[new Random().Next(museumIds.Count)];
-                }
-                var pair = new ArtistMuseumPair { ArtistId = artistid, MuseumId = museumId };
+                    pair.ArtistId = artistId;
+                    pair.MuseumId = museumId;
+                } while (artistMuseumPairs.Contains(pair));
+
                 artistMuseumPairs.Add(pair);
                 return pair;
-            });
-
+            }
 
             for (int i = 0; i < n; i++)
             {
                 var exhibition = faker.Generate();
+                var pair = RandomArtistMuseumPair();
 
-                // get a unique pair using the lambda
-                var pair = randomArtistMuseumPair();
                 exhibition.ArtistId = pair.ArtistId;
                 exhibition.MuseumId = pair.MuseumId;
 

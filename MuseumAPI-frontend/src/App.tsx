@@ -43,6 +43,7 @@ import { UserAdd } from "./components/users/UserAdd";
 import { UserDelete } from "./components/users/UserDelete";
 import { UserUpdate } from "./components/users/UserUpdate";
 import { Chat } from "./components/Chat";
+import { MachineLearningModel } from "./components/MachineLearningModel";
 
 
 const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(
@@ -125,6 +126,8 @@ function App() {
 						<Route path="/paintings/:paintingId/delete" element={<PaintingDelete />} />
 						<Route path="/paintings/:paintingId/edit" element={<PaintingUpdate />} />
 						<Route path="/filterpaintings" element={<PaintingFilter />} />
+
+						<Route path="/priceprediction" element={<MachineLearningModel />} />
 
 						<Route path="/museums" element={<AllMuseums />} />
 						<Route path="/museums/:museumId/details" element={<MuseumDetails />} />

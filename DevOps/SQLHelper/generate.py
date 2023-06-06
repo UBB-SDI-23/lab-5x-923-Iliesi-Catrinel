@@ -203,7 +203,8 @@ def create_paintings_csv():
             height = round(random.uniform(0.5, 5.0), 2)
             subject = random.choice(SUBJECTS)
             medium = random.choice(MEDIUMS)
-            description = "\n\n".join(fake.paragraphs(nb=2, ext_word_list=None))
+            description = "".join(fake.paragraphs(nb=2, ext_word_list=None))
+            price = round(random.uniform(1000.0, 10000.0), 2)
             artist_id = random.randint(1, ARTISTS_COUNT)
 
             user_id = random.randint(1, USERS_COUNT)
@@ -218,6 +219,7 @@ def create_paintings_csv():
                     description,
                     artist_id,
                     user_id,
+                    price,
                 ]
             )
 
@@ -279,12 +281,12 @@ def create_exhibitions_csv():
 if __name__ == "__main__":
     processes = []
     for func in [
-        create_users_csv,
-        create_user_profiles_csv,
-        create_artists_csv,
+        # create_users_csv,
+        # create_user_profiles_csv,
+        # create_artists_csv,
         create_paintings_csv,
-        create_museums_csv,
-        create_exhibitions_csv,
+        # create_museums_csv,
+        # create_exhibitions_csv,
     ]:
         p = Process(target=func)
         processes.append(p)

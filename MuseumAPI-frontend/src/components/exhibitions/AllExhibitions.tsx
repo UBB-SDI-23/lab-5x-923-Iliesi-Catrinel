@@ -121,7 +121,7 @@ export const AllExhibitions = () => {
             {loading && <CircularProgress />}
             {!loading && exhibitions.length === 0 && <p style={{ marginLeft: 16 }}>No exhibitions found!</p>}
             {!loading && (
-                <IconButton component={Link} sx={{ mr: 3 }} to={`/exhibitions/add`}>
+                <IconButton component={Link} sx={{ mr: 3 }} to={`/exhibitions/add`} disabled={getAccount() === null}>
                     <Tooltip title="Add a new exhibition" arrow>
                         <AddIcon color="primary" />
                     </Tooltip>

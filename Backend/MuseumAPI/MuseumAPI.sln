@@ -5,7 +5,11 @@ VisualStudioVersion = 17.5.33424.131
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MuseumAPI", "MuseumAPI.csproj", "{C79586DC-ED20-4ED4-9FE1-79F633BB642B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MuseumAPITests", "..\MuseumAPITests\MuseumAPITests.csproj", "{16DFC198-92B1-4DDE-B075-3154B8CBA73C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MuseumAPITests", "..\MuseumAPITests\MuseumAPITests.csproj", "{16DFC198-92B1-4DDE-B075-3154B8CBA73C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PaintingMLModel_WebApi", "..\PaintingMLModel_WebApi\PaintingMLModel_WebApi.csproj", "{8B607E59-1CAD-4CED-BC64-B99543C130D0}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PaintingMLModel_WebApi1", "..\PaintingMLModel_WebApi1\PaintingMLModel_WebApi1.csproj", "{F8380AF2-DED3-44A7-B148-C2DB04A215CD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +25,14 @@ Global
 		{16DFC198-92B1-4DDE-B075-3154B8CBA73C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{16DFC198-92B1-4DDE-B075-3154B8CBA73C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{16DFC198-92B1-4DDE-B075-3154B8CBA73C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8B607E59-1CAD-4CED-BC64-B99543C130D0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8B607E59-1CAD-4CED-BC64-B99543C130D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8B607E59-1CAD-4CED-BC64-B99543C130D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8B607E59-1CAD-4CED-BC64-B99543C130D0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F8380AF2-DED3-44A7-B148-C2DB04A215CD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F8380AF2-DED3-44A7-B148-C2DB04A215CD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F8380AF2-DED3-44A7-B148-C2DB04A215CD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F8380AF2-DED3-44A7-B148-C2DB04A215CD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

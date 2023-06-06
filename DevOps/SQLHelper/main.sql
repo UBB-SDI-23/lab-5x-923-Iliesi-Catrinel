@@ -120,7 +120,6 @@ VALUES
 	('moderator', 'cfde2ca5188afb7bdd0691c7bef887baba78b709aadde8e8c535329d5751e6fe', 2),
 	('regular', '667937c3e7a68ea374716edae34173e66dc54f380cffaccceaf15dfbfad22f99', 1),
 	('unconfirmed', 'c78a686d7cf5224908a78db81aad8ee8bc987f4b2bab7eceebae29bfad601c58', 0)
-
 GO
 
 INSERT INTO UserProfiles([UserId], [Bio], [Location], [Birthday], [Gender], [MaritalStatus], [PagePreference])
@@ -140,6 +139,9 @@ INSERT INTO ConfirmationCodes([UserId], [Code], [Expiration], [Used])
 VALUES
 	(10004, 'a', '2000-01-01 00:00:00.0000000', 0)
 GO
+
+SELECT * FROM Artists
+SELECT * FROM Paintings
 
 SELECT * FROM ConfirmationCodes
 SELECT * FROM Users WHERE [Name] IN ('admin', 'moderator', 'regular', 'unconfirmed')
